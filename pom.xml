@@ -239,8 +239,6 @@
 				<configuration>
 					<excludes>
 						<exclude>**/*.properties</exclude>
-						<exclude>**/*.js</exclude>
-						<exclude>**/*.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
