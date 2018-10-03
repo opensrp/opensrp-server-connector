@@ -178,7 +178,7 @@
 		<finalName>opensrp-server-connector</finalName>
 		<resources>
 			<resource>
-				<directory>src/main/resources</directory>
+				<directory>configs/modules/connector</directory>
 			</resource>
 			<resource>
 				<directory>configs/assets/schedules</directory>
