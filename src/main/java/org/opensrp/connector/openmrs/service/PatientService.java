@@ -18,6 +18,7 @@ import org.opensrp.api.util.LocationTree;
 import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.MultipartUtility;
+import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
 import org.opensrp.connector.openmrs.schedule.OpenmrsSyncerListener;
 import org.opensrp.connector.openmrs.service.OpenmrsLocationService.AllowedLevels;
@@ -62,7 +63,7 @@ public class PatientService extends OpenmrsService {
 	
 	private static final String PATIENT_IMAGE_URL = "ws/rest/v1/patientimage/uploadimage";
 	
-	private static final String PATIENT_IDENTIFIER_URL = "identifier";
+	private static final String PATIENT_IDENTIFIER_URL = ConnectorConstants.IDENTIFIER;
 	
 	private static final String PERSON_ATTRIBUTE_TYPE_URL = "ws/rest/v1/personattributetype";
 	
@@ -604,9 +605,9 @@ public class PatientService extends OpenmrsService {
 				if (id.getValue() != null) {
 					jio.put("identifierType", fetchIdentifierTypeUUID(id.getKey()));
 					if (id.getKey().equalsIgnoreCase(OPENSRP_ID_TYPE_KEY)) {
-						jio.put("identifier", cleanIdentifierWithCheckDigit(id.getValue()));
+						jio.put(ConnectorConstants.IDENTIFIER, cleanIdentifierWithCheckDigit(id.getValue()));
 					} else {
-						jio.put("identifier", id.getValue());
+						jio.put(ConnectorConstants.IDENTIFIER, id.getValue());
 					}
 					Object cloc = c.getAttribute("Location");
 					jio.put("location", cloc == null ? "Unknown Location" : cloc);
@@ -623,7 +624,7 @@ public class PatientService extends OpenmrsService {
 			throws JSONException {
 		String url = PATIENT_URL + "/" + patientUUID + "/identifier/" + identifierUUID;
 		JSONObject p = new JSONObject();
-		p.put("identifier", newIdentifier);
+		p.put(ConnectorConstants.IDENTIFIER, newIdentifier);
 		
 		return new JSONObject(HttpUtil.post(getURL() + "/" + url, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 		
@@ -647,7 +648,7 @@ public class PatientService extends OpenmrsService {
 	private void addPersonAttributes(Client c, JSONObject p, JSONArray ids) throws JSONException {
 		JSONObject jio = new JSONObject();
 		jio.put("identifierType", fetchIdentifierTypeUUID(OPENSRP_IDENTIFIER_TYPE));
-		jio.put("identifier", c.getBaseEntityId());
+		jio.put(ConnectorConstants.IDENTIFIER, c.getBaseEntityId());
 		Object cloc = c.getAttribute("Location");
 		jio.put("location", cloc == null ? "Unknown Location" : cloc);
 		jio.put("preferred", true);
@@ -659,7 +660,7 @@ public class PatientService extends OpenmrsService {
 	public JSONObject addThriveId(String baseEntityId, JSONObject patient) throws JSONException {
 		JSONObject jio = new JSONObject();
 		jio.put("identifierType", fetchIdentifierTypeUUID(OPENSRP_IDENTIFIER_TYPE));
-		jio.put("identifier", baseEntityId);
+		jio.put(ConnectorConstants.IDENTIFIER, baseEntityId);
 		jio.put("location", "Unknown Location");
 		jio.put("preferred", true);
 		return new JSONObject(
@@ -673,9 +674,9 @@ public class PatientService extends OpenmrsService {
 		for (int i = 0; i < ar.length(); i++) {
 			JSONObject ji = ar.getJSONObject(i);
 			if (ji.getJSONObject("identifierType").getString("display").equalsIgnoreCase(OPENSRP_IDENTIFIER_TYPE)) {
-				c.setBaseEntityId(ji.getString("identifier"));
+				c.setBaseEntityId(ji.getString(ConnectorConstants.IDENTIFIER));
 			} else {
-				c.addIdentifier(ji.getJSONObject("identifierType").getString("display"), ji.getString("identifier"));
+				c.addIdentifier(ji.getJSONObject("identifierType").getString("display"), ji.getString(ConnectorConstants.IDENTIFIER));
 			}
 		}
 		
@@ -732,8 +733,7 @@ public class PatientService extends OpenmrsService {
 		return c;
 	}
 	
-	public List<String> patientImageUpload(Multimedia multimedia) throws IOException {
-		//String requestURL =  "http://46.101.51.199:8080/openmrs/ws/rest/v1/patientimage/uploadimage";
+	public List<String> patientImageUpload(Multimedia multimedia) {
 		List<String> response = new ArrayList<>();
 		try {
 			File convFile = new File("/opt" + multimedia.getFilePath());
