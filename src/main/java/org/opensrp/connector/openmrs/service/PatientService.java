@@ -361,7 +361,6 @@ public class PatientService extends OpenmrsService {
 							}
 						}
 					}
-					
 				}
 				if (uuid != null) {
 					logger.info("Updating patient " + uuid);
@@ -379,9 +378,8 @@ public class PatientService extends OpenmrsService {
 					if (patientJson != null && patientJson.has("uuid")) {
 						c.addIdentifier(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE, patientJson.getString("uuid"));
 						clientService.addorUpdate(c, false);
-						config.updateAppStateToken(schedulerConfig, c.getServerVersion());
 					}
-					
+					config.updateAppStateToken(schedulerConfig, c.getServerVersion());
 				}
 			}
 			catch (Exception ex1) {
@@ -602,37 +600,44 @@ public class PatientService extends OpenmrsService {
 	}
 	
 	public JSONObject createPatient(Client c) throws JSONException {
-		JSONObject p = new JSONObject();
 		
-		p.put("person", createPerson(c).getString("uuid"));
-		
-		JSONArray ids = new JSONArray();
-		if (c.getIdentifiers() != null) {
-			for (Entry<String, String> id : c.getIdentifiers().entrySet()) {
-				JSONObject jio = new JSONObject();
-				jio.put("identifierType", fetchIdentifierTypeUUID(id.getKey()));
-				if (id.getKey().equalsIgnoreCase(OPENSRP_ID_TYPE_KEY)) {
-					jio.put("identifier", cleanIdentifierWithCheckDigit(id.getValue()));
-				} else {
-					jio.put("identifier", id.getValue());
+		String personUUIDString = createPerson(c).optString("uuid");
+		if(personUUIDString !=null) {
+			JSONObject p = new JSONObject();
+			p.put("person", personUUIDString);
+			
+			JSONArray ids = new JSONArray();
+			if (c.getIdentifiers() != null) {
+				for (Entry<String, String> id : c.getIdentifiers().entrySet()) {
+					JSONObject jio = new JSONObject();
+					jio.put("identifierType", fetchIdentifierTypeUUID(id.getKey()));
+					if (id.getKey().equalsIgnoreCase(OPENSRP_ID_TYPE_KEY)) {
+						jio.put("identifier", cleanIdentifierWithCheckDigit(id.getValue()));
+					} else {
+						jio.put("identifier", id.getValue());
+					}
+					Object cloc = c.getAttribute("Location");
+					jio.put("location", cloc == null ? "Unknown Location" : cloc);
+					ids.put(jio);
 				}
-				Object cloc = c.getAttribute("Location");
-				jio.put("location", cloc == null ? "Unknown Location" : cloc);
-				ids.put(jio);
 			}
+			JSONObject jio = new JSONObject();
+			jio.put("identifierType", fetchIdentifierTypeUUID(OPENSRP_IDENTIFIER_TYPE));
+			jio.put("identifier", c.getBaseEntityId());
+			Object cloc = c.getAttribute("Location");
+			jio.put("location", cloc == null ? "Unknown Location" : cloc);
+			jio.put("preferred", true);
+			
+			ids.put(jio);
+			
+			p.put("identifiers", ids);
+			String response = HttpUtil.post(getURL() + "/" + PATIENT_URL, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body();
+			return new JSONObject(response);
+		
 		}
-		JSONObject jio = new JSONObject();
-		jio.put("identifierType", fetchIdentifierTypeUUID(OPENSRP_IDENTIFIER_TYPE));
-		jio.put("identifier", c.getBaseEntityId());
-		Object cloc = c.getAttribute("Location");
-		jio.put("location", cloc == null ? "Unknown Location" : cloc);
-		jio.put("preferred", true);
-		
-		ids.put(jio);
-		
-		p.put("identifiers", ids);
-		String response = HttpUtil.post(getURL() + "/" + PATIENT_URL, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body();
-		return new JSONObject(response);
+		else {
+			return null;
+		}
 	}
 	
 	public JSONObject updatePatientIdentifier(String patientUUID, String identifierUUID, String newIdentifier)
