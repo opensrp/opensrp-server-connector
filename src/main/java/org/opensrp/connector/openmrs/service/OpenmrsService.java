@@ -45,6 +45,13 @@ public abstract class OpenmrsService {
 		OPENMRS_PWD = password;
 	}
 	
+	public OpenmrsService(String openmrsUrl, String user, String password, String openmrsVersion) {
+		OPENMRS_BASE_URL = openmrsUrl;
+		OPENMRS_USER = user;
+		OPENMRS_PWD = password;
+		OPENMRS_VERSION = openmrsVersion;
+	}
+	
 	/**
 	 * returns url after trimming ending slash
 	 * 

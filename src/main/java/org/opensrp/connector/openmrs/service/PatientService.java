@@ -120,8 +120,7 @@ public class PatientService extends OpenmrsService {
 	}
 	
 	public String getPatientByIdentifierUUID(String identifier) throws JSONException {
-		JSONObject j = new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL,
-				CUSTOM_UUID_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
+		JSONObject j = new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL, CUSTOM_UUID_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
 		return getUuidFromJSONObject(j);
 	}
 	

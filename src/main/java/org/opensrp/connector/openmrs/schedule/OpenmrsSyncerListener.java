@@ -147,31 +147,31 @@ public class OpenmrsSyncerListener {
 	}
 	
 	public JSONObject pushEvent(long start) {
-		List<Event> el = eventService.findByServerVersion(start);
-		logger.info("Event list size " + el.size() + " [start]" + start);
+		List<Event> eventList = eventService.findByServerVersion(start);
+		logger.info("Event list size " + eventList.size() + " [start]" + start);
 		JSONObject encounter = null;
-		if (el != null && !el.isEmpty())
-			for (Event e : el) {
+		if (eventList != null && !eventList.isEmpty())
+			for (Event event : eventList) {
 				try {
-					String uuid = e.getIdentifier(EncounterService.OPENMRS_UUID_IDENTIFIER_TYPE);
+					String uuid = event.getIdentifier(EncounterService.OPENMRS_UUID_IDENTIFIER_TYPE);
 					if (uuid != null) {
-						encounter = encounterService.updateEncounter(e);
+						encounter = encounterService.updateEncounter(event);
 						config.updateAppStateToken(SchedulerConfig.openmrs_syncer_sync_event_by_date_updated,
-						    e.getServerVersion());
+						    event.getServerVersion());
 					} else {
-						JSONObject eventJson = encounterService.createEncounter(e);
+						JSONObject eventJson = encounterService.createEncounter(event);
 						encounter = eventJson;// only for test code purpose
 						if (eventJson != null && eventJson.has("uuid")) {
-							e.addIdentifier(EncounterService.OPENMRS_UUID_IDENTIFIER_TYPE, eventJson.getString("uuid"));
-							eventService.updateEvent(e);
+							event.addIdentifier(EncounterService.OPENMRS_UUID_IDENTIFIER_TYPE, eventJson.getString("uuid"));
+							eventService.updateEvent(event);
 							config.updateAppStateToken(SchedulerConfig.openmrs_syncer_sync_event_by_date_updated,
-							    e.getServerVersion());
+							    event.getServerVersion());
 						}
 					}
 				}
 				catch (Exception ex2) {
 					logger.error("", ex2);
-					errorTraceService.log("OPENMRS FAILED EVENT PUSH", Event.class.getName(), e.getId(),
+					errorTraceService.log("OPENMRS FAILED EVENT PUSH", Event.class.getName(), event.getId(),
 					    ExceptionUtils.getStackTrace(ex2), "");
 				}
 			}

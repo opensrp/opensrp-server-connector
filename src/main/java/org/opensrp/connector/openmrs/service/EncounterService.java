@@ -60,6 +60,10 @@ public class EncounterService extends OpenmrsService {
 		super(openmrsUrl, user, password);
 	}
 	
+	public EncounterService(String openmrsUrl, String user, String password, String openMrsVersion) {
+		super(openmrsUrl, user, password, openMrsVersion);
+	}
+	
 	public PatientService getPatientService() {
 		return patientService;
 	}
@@ -172,7 +176,6 @@ public class EncounterService extends OpenmrsService {
 						generateObs(parent, pc, obs, observationLists);
 					}
 				}
-			
 			JSONArray obsArray = new JSONArray();
 			
 			for (String ok : parent.keySet()) {
@@ -188,8 +191,6 @@ public class EncounterService extends OpenmrsService {
 							obsArray = concatArray(obsArray, childObs);
 						} else {
 							obsObject.put(ConnectorConstants.GROUP_MEMBERS, childObs);
-							logger.debug("====================================================== I was here");
-							logger.debug(obsObject.toString());
 							obsObject.remove(ConnectorConstants.VALUE);
 							obsArray.put(obsObject);
 						}
@@ -200,8 +201,7 @@ public class EncounterService extends OpenmrsService {
 			}
 			
 			encounter.put(ConnectorConstants.OBS, obsArray);
-			HttpResponse op = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + ENCOUNTER_URL, "",
-					encounter.toString(), OPENMRS_USER, OPENMRS_PWD);
+			HttpResponse op = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + ENCOUNTER_URL, "", encounter.toString(), OPENMRS_USER, OPENMRS_PWD);
 			return new JSONObject(op.body());
 		}
 	}
@@ -225,7 +225,6 @@ public class EncounterService extends OpenmrsService {
 	}
 	
 	public JSONObject buildUpdateEncounter(Event event) throws JSONException {
-		
 		String openmrsUuid = event.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE);
 		JSONObject encounterObsUuids = getObsByEncounterUuid(openmrsUuid);
 		JSONArray obsUuids = encounterObsUuids.getJSONArray(ConnectorConstants.OBS);
@@ -278,8 +277,6 @@ public class EncounterService extends OpenmrsService {
 					}
 					
 					obsObject.put(ConnectorConstants.GROUP_MEMBERS, cob);
-					logger.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ I was here");
-					logger.debug(obsObject.toString());
 					obsObject.remove(ConnectorConstants.VALUE);
 				}
 				

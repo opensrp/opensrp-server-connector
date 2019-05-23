@@ -25,6 +25,8 @@ public class TestResourceLoader {
 	
 	protected static String openmrsPassword;
 	
+	protected static String openmrsVersion;
+	
 	protected String formDirPath;
 	
 	protected String dhis2Url;
@@ -53,6 +55,7 @@ public class TestResourceLoader {
 		openmrsOpenmrsUrl = props.getProperty("openmrs.url");
 		openmrsUsername = props.getProperty("openmrs.username");
 		openmrsPassword = props.getProperty("openmrs.password");
+		openmrsVersion = props.getProperty("openmrs.version");
 		formDirPath = props.getProperty("form.directory.name");
 		
 		dhis2Url = props.getProperty("dhis2.url");
@@ -63,7 +66,7 @@ public class TestResourceLoader {
 		pushToOpenmrsForTest = StringUtils.isEmptyOrWhitespaceOnly(rc) ? false : Boolean.parseBoolean(rc);
 		
 		this.patientService = new PatientService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
-		this.encounterService = new EncounterService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
+		this.encounterService = new EncounterService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword, openmrsVersion);
 		this.openmrsLocationService = new OpenmrsLocationService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 		this.dhis2DatasetPush = new DHIS2DatasetPush(dhis2Url, dhis2Username, dhis2Password);
 		this.encounterService.setPatientService(patientService);
