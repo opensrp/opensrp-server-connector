@@ -272,17 +272,12 @@ public class EncounterServiceTest extends TestResourceLoader {
 	@SuppressWarnings ("unchecked")
 	@Test
 	public void shouldGetDataSpecifiedInMultiselect() throws IOException {
-		FormSubmission fs = getFormSubmissionFor("new_household_registration_with_grouped_subform_data", 1);
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		
-		Map<String, Map<String, Object>> dc = formEntityConverter.getDependentClientsFromFormSubmission(fs);
-		for (String id : dc.keySet()) {
-			Client cl = (Client) dc.get(id).get("client");
-			Event ev = (Event) dc.get(id).get("event");
+		FormSubmission formSubmission = getFormSubmissionFor("new_household_registration_with_grouped_subform_data", 1);
+		Map<String, Map<String, Object>> dependentClientsFromFormSubmission = formEntityConverter.getDependentClientsFromFormSubmission(formSubmission);
+		for (String id : dependentClientsFromFormSubmission.keySet()) {
+			Event event = (Event) dependentClientsFromFormSubmission.get(id).get("event");
 			
-			assertThat(ev.getObs(),
+			assertThat(event.getObs(),
 					Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
 							Matchers.<Obs>hasProperty("fieldCode", equalTo("163087AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
 							Matchers.<Obs>hasProperty("values",

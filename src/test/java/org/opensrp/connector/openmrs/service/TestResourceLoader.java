@@ -18,35 +18,20 @@ import com.google.gson.JsonIOException;
 import com.mysql.jdbc.StringUtils;
 
 public class TestResourceLoader {
-	
 	protected static String openmrsOpenmrsUrl;
-	
 	protected static String openmrsUsername;
-	
 	protected static String openmrsPassword;
-	
-	protected static String openmrsVersion;
-	
+	protected static String openmrsVersion = "";
 	protected String formDirPath;
-	
 	protected String dhis2Url;
-	
 	protected String dhis2Username;
-	
 	protected String dhis2Password;
-	
 	protected boolean pushToOpenmrsForTest;
-	
 	protected PatientService patientService;
-	
 	protected EncounterService encounterService;
-	
 	protected DHIS2DatasetPush dhis2DatasetPush;
-	
 	protected OpenmrsLocationService openmrsLocationService;
-	
 	protected String couchDBUserName;
-	
 	protected String couchDBPassword;
 	
 	public TestResourceLoader() throws IOException {
