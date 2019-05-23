@@ -1,8 +1,6 @@
 
 package org.opensrp.connector.openmrs.service;
 
-import com.google.gson.JsonIOException;
-
 import org.hamcrest.Matchers;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -50,24 +48,19 @@ import static org.opensrp.common.AllConstants.Event.OPENMRS_UUID_IDENTIFIER_TYPE
 @PrepareForTest ({HttpUtil.class})
 @PowerMockIgnore ({"org.apache.http.conn.ssl.*", "javax.net.ssl.*"})
 public class EncounterServiceTest extends TestResourceLoader {
+	private EncounterService encounterService1;
+	private FormEntityConverter formEntityConverter;
+	private HouseholdService householdService;
 	
 	public EncounterServiceTest() throws IOException {
 		super();
 	}
 	
-	private EncounterService encounterService1;
-	private FormEntityConverter formEntityConverter;
-	private PatientService patientService1;
-	private OpenmrsUserService openmrsUserService;
-	private HouseholdService householdService;
-	
-	SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");
-	
 	@Before
-	public void setup() throws IOException {
+	public void setUp() throws IOException {
 		PowerMockito.mockStatic(HttpUtil.class);
-		patientService1 = new PatientService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
-		openmrsUserService = new OpenmrsUserService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
+		PatientService patientService1 = new PatientService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
+		OpenmrsUserService openmrsUserService = new OpenmrsUserService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 		encounterService1 = new EncounterService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword,openmrsVersion);
 		encounterService1.setPatientService(patientService1);
 		encounterService1.setUserService(openmrsUserService);
@@ -82,47 +75,29 @@ public class EncounterServiceTest extends TestResourceLoader {
 	public void testEncounter() throws JSONException, IOException {
 		FormSubmission fs = getFormSubmissionFor("basic_reg");
 		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBaseEntityId(), "b716d938-1aea-40ae-a081-9ddddddcccc9");
-		assertEquals(c.getFirstName(), "test woman_name");
-		assertEquals(c.getGender(), "FEMALE");
-		assertEquals(c.getAddresses().get(0).getAddressType(), "birthplace");
-		assertEquals(c.getAddresses().get(1).getAddressType(), "usual_residence");
-		assertEquals(c.getAddresses().get(2).getAddressType(), "previous_residence");
-		assertEquals(c.getAddresses().get(3).getAddressType(), "deathplace");
-		assertTrue(c.getAttributes().isEmpty());
+		Client client = formEntityConverter.getClientFromFormSubmission(fs);
+		assertEquals(client.getBaseEntityId(), "b716d938-1aea-40ae-a081-9ddddddcccc9");
+		assertEquals(client.getFirstName(), "test woman_name");
+		assertEquals(client.getGender(), "FEMALE");
+		assertEquals(client.getAddresses().get(0).getAddressType(), "birthplace");
+		assertEquals(client.getAddresses().get(1).getAddressType(), "usual_residence");
+		assertEquals(client.getAddresses().get(2).getAddressType(), "previous_residence");
+		assertEquals(client.getAddresses().get(3).getAddressType(), "deathplace");
+		assertTrue(client.getAttributes().isEmpty());
 		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(e.getEventType(), "patient_register");
-		assertEquals(e.getEventDate(), new DateTime(new DateTime("2015-02-01")));
-		assertEquals(e.getLocationId(), "unknown location");
+		Event event = formEntityConverter.getEventFromFormSubmission(fs);
+		assertEquals(event.getEventType(), "patient_register");
+		assertEquals(event.getEventDate(), new DateTime(new DateTime("2015-02-01")));
+		assertEquals(event.getLocationId(), "unknown location");
 		
 		if (pushToOpenmrsForTest) {
-			JSONObject en = encounterService1.createEncounter(e);
+			JSONObject en = encounterService1.createEncounter(event);
 			System.out.println(en);
 		}
 	}
 	
 	@Test
-	public void testGroupedEncounter() throws IOException {
-		FormSubmission fs = getFormSubmissionFor("repeatform");
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		//TODO		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		//TODO
-		/*if(true){
-			JSONObject p = patientService1.getPatientByIdentifier(c.getBaseEntityId());
-			if(p == null){
-				p = patientService1.createPatient(c);
-			}
-			JSONObject en = encounterService1.createEncounter(e);
-			System.out.println(en);
-		}*/
-	}
-	
-	@Test
-	public void shouldHandleSubform() throws IOException {
+	public void shouldHandleSubForm() throws IOException {
 		FormSubmission fs = getFormSubmissionFor("new_household_registration", 1);
 		
 		Client c = formEntityConverter.getClientFromFormSubmission(fs);
@@ -317,19 +292,6 @@ public class EncounterServiceTest extends TestResourceLoader {
 							Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
 							Matchers.<Obs>hasProperty("fieldDataType", startsWith("select all")))));
 		}
-	}
-	
-	@Test
-	public void parentChildObsTest() throws JsonIOException, IOException, JSONException {
-		FormSubmission fs = getFormSubmissionFor("psrf_form");
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		Event e = (Event) formEntityConverter.getEventFromFormSubmission(fs);
-		
-		if (pushToOpenmrsForTest) {
-			encounterService1.createEncounter(e);
-		}
-		
 	}
 	
 	@SuppressWarnings ("unchecked")
