@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.opensrp.api.domain.Location;
 import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
+import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
 import org.opensrp.domain.Obs;
@@ -26,30 +27,20 @@ import com.mysql.jdbc.StringUtils;
 
 @Service
 public class EncounterService extends OpenmrsService {
-	
 	private static Logger logger = LoggerFactory.getLogger(EncounterService.class.toString());
-	
 	public static final String OPENMRS_UUID_IDENTIFIER_TYPE = "OPENMRS_UUID";
-	
 	private static final String ENCOUNTER_URL = "ws/rest/v1/encounter";//"ws/rest/emrapi/encounter";
-	
 	private static final String OBS_URL = "ws/rest/v1/obs";
-	
 	private static final String ENCOUNTER__TYPE_URL = "ws/rest/v1/encountertype";
-	
 	private PatientService patientService;
-	
 	private OpenmrsUserService userService;
-	
 	private ClientService clientService;
-	
 	private OpenmrsLocationService openmrsLocationService;
-	
 	private static final String CONCEPT_REMOVE_REASON_DEATH = "161641AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 	
 	@Autowired
 	public EncounterService(PatientService patientService, OpenmrsUserService userService, ClientService clientService,
-	    OpenmrsLocationService openmrsLocationService) {
+	                        OpenmrsLocationService openmrsLocationService) {
 		this.patientService = patientService;
 		this.userService = userService;
 		this.clientService = clientService;
@@ -58,6 +49,10 @@ public class EncounterService extends OpenmrsService {
 	
 	public EncounterService(String openmrsUrl, String user, String password) {
 		super(openmrsUrl, user, password);
+	}
+	
+	public EncounterService(String openmrsUrl, String user, String password, String openMrsVersion) {
+		super(openmrsUrl, user, password, openMrsVersion);
 	}
 	
 	public PatientService getPatientService() {
@@ -74,31 +69,31 @@ public class EncounterService extends OpenmrsService {
 	
 	public JSONObject getEncounterByUuid(String uuid, boolean noRepresentationTag) throws JSONException {
 		return new JSONObject(HttpUtil.get(getURL() + "/" + ENCOUNTER_URL + "/" + uuid, noRepresentationTag ? "" : "v=full",
-		    OPENMRS_USER, OPENMRS_PWD).body());
+				OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	public JSONObject getObsByEncounterUuid(String encounterUuid) throws JSONException {
 		// The data format returned contains the obs uuid and concept uuids
 		return new JSONObject(HttpUtil.get(getURL() + "/" + ENCOUNTER_URL + "/" + encounterUuid,
-		    "v=custom:(uuid,obs:(uuid,concept:(uuid)))", OPENMRS_USER, OPENMRS_PWD).body());
+				"v=custom:(uuid,obs:(uuid,concept:(uuid)))", OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	public JSONObject getObsUuidByParentObsUuid(String obsUuid) throws JSONException {
 		//The data format returned contains the children obs uuid and concept uuids
 		return new JSONObject(HttpUtil.get(getURL() + "/" + OBS_URL + "/" + obsUuid,
-		    "v=custom:(groupMembers:(uuid,concept:(uuid)))", OPENMRS_USER, OPENMRS_PWD).body());
+				"v=custom:(groupMembers:(uuid,concept:(uuid)))", OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	public JSONObject getEncounterType(String encounterType) throws JSONException {
-		// we have to use this ugly approach because identifier not found throws exception and 
+		// we have to use this ugly approach because identifier not found throws exception and
 		// its hard to find whether it was network error or object not found or server error
 		JSONObject resEncounterType = new JSONObject(
-		        HttpUtil.get(getURL() + "/" + ENCOUNTER__TYPE_URL, "v=full", OPENMRS_USER, OPENMRS_PWD).body());
+				HttpUtil.get(getURL() + "/" + ENCOUNTER__TYPE_URL, "v=full", OPENMRS_USER, OPENMRS_PWD).body());
 		
-		if (resEncounterType.has("results") && resEncounterType.get("results") instanceof JSONArray) {
-			JSONArray res = resEncounterType.getJSONArray("results");
+		if (resEncounterType.has(ConnectorConstants.RESULTS) && resEncounterType.get(ConnectorConstants.RESULTS) instanceof JSONArray) {
+			JSONArray res = resEncounterType.getJSONArray(ConnectorConstants.RESULTS);
 			for (int i = 0; i < res.length(); i++) {
-				if (res.getJSONObject(i).getString("display").equalsIgnoreCase(encounterType)) {
+				if (res.getJSONObject(i).getString(ConnectorConstants.DISPLAY).equalsIgnoreCase(encounterType)) {
 					return res.getJSONObject(i);
 				}
 			}
@@ -107,95 +102,111 @@ public class EncounterService extends OpenmrsService {
 	}
 	
 	public JSONObject createEncounterType(String name, String description) throws JSONException {
-		JSONObject o = convertEncounterToOpenmrsJson(name, description);
+		JSONObject encounterType = convertEncounterToOpenmrsJson(name, description);
 		return new JSONObject(
-		        HttpUtil.post(getURL() + "/" + ENCOUNTER__TYPE_URL, "", o.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+				HttpUtil.post(getURL() + "/" + ENCOUNTER__TYPE_URL, "", encounterType.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	public JSONObject convertEncounterToOpenmrsJson(String name, String description) throws JSONException {
-		JSONObject a = new JSONObject();
-		a.put("name", name);
-		a.put("description", description);
-		return a;
+		JSONObject encounterJsonObject = new JSONObject();
+		encounterJsonObject.put(ConnectorConstants.NAME, name);
+		encounterJsonObject.put("description", description);
+		return encounterJsonObject;
 	}
 	
-	public JSONObject createEncounter(Event e) throws JSONException {
-		String ptuuid = patientService.getPatientByIdentifierUUID(e.getBaseEntityId());
-		if (ptuuid == null) {
+	public JSONObject createEncounter(Event event) throws JSONException {
+		String patientUuid = patientService.getPatientByIdentifierUUID(event.getBaseEntityId());
+		if (patientUuid == null) {
 			return null;
 		} else {
-			if (e.getEventType().equals("Update Birth Registration")) {
-				patientService.updatePersonAddress(e);
-			} else if (e.getEventType().equals("Death")) {
-				patientService.updatePersonAsDeceased(e);
-			} else if (e.getEventType().equals("Move To Catchment")) {
-				patientService.moveToCatchment(e);
+			switch (event.getEventType()) {
+				case ConnectorConstants.UPDATE_BIRTH_REGISTRATION:
+					patientService.updatePersonAddress(event);
+					break;
+				case "Death":
+					patientService.updatePersonAsDeceased(event);
+					break;
+				case "Move To Catchment":
+					patientService.moveToCatchment(event);
+					break;
+				default:
+					break;
 			}
-			JSONObject enc = new JSONObject();
 			
-			enc.put("encounterDatetime", OPENMRS_DATE.format(e.getEventDate().toDate()));
-			// patient must be existing in OpenMRS before it submits an encounter. if it doesnot it would throw NPE
-			enc.put("patient", ptuuid);
-			enc.put("encounterType", e.getEventType());
-			enc.put("location", e.getLocationId());
+			JSONObject encounter = getEncounterJsonObject(event, patientUuid);
 			
-			makeProvider(enc, e.getProviderId());
+			List<Obs> observationLists = event.getObs();
+			Map<String, JSONArray> parent = new HashMap<>();
+			Map<String, JSONArray> parentChild = new HashMap<>();
 			
-			List<Obs> ol = e.getObs();
-			Map<String, JSONArray> p = new HashMap<>();
-			Map<String, JSONArray> pc = new HashMap<>();
-			
-			if (ol != null)
-				for (Obs obs : ol) {
+			if (observationLists != null)
+				for (Obs obs : observationLists) {
 					if (!StringUtils.isEmptyOrWhitespaceOnly(obs.getFieldCode())
-					        && (obs.getFieldType() == null || obs.getFieldType().equalsIgnoreCase("concept"))) {
+							&& (obs.getFieldType() == null || obs.getFieldType().equalsIgnoreCase(ConnectorConstants.CONCEPT))) {
 						//						skipping empty obs and fields that don't have concepts if no parent simply make it root obs
-						if (obs.getFieldType().equals("concept")) {
-							if (obs.getFormSubmissionField().equals("Birth_Facility_Name") && obs.getValue() != null) {
+						if (ConnectorConstants.CONCEPT.equals(obs.getFieldType())) {
+							if (ConnectorConstants.BIRTH_FACILITY_NAME.equals(obs.getFormSubmissionField()) && obs.getValue() != null) {
 								Location location = openmrsLocationService.getLocation(obs.getValue().toString());
 								if (location != null && location.getName() != null) {
 									obs.setValue(location.getName());
 								}
 							}
 							
-							if (obs.getFieldCode() != null && e.getEventType().equals("Remove")
-							        && obs.getFieldCode().equalsIgnoreCase(CONCEPT_REMOVE_REASON_DEATH)) {
-								patientService.updatePersonAsDeceased(e);
+							if (obs.getFieldCode() != null && ConnectorConstants.REMOVE.equals(event.getEventType())
+									&& obs.getFieldCode().equalsIgnoreCase(CONCEPT_REMOVE_REASON_DEATH)) {
+								patientService.updatePersonAsDeceased(event);
 							}
 						}
 						
-						generateObs(p, pc, obs, ol);
+						generateObs(parent, parentChild, obs, observationLists);
 					}
 				}
+			JSONArray obsArray = getObsJsonArray(event, parent, parentChild);
 			
-			JSONArray obar = new JSONArray();
-			
-			for (String ok : p.keySet()) {
-				for (int i = 0; i < p.get(ok).length(); i++) {
-					JSONObject obo = p.get(ok).getJSONObject(i);
-					JSONArray cob = pc.get(ok);
-					if (cob != null && cob.length() > 0) {
-						//fix for vaccines wrong parent concept remove the if-condition once the right concepts are passed
-						if (e.getEventType().equals("Vaccination") || e.getEventType().equals("HPV Vaccination")) {
-							JSONObject vaccineParent = new JSONObject();
-							vaccineParent.put("concept", ok);
-							cob.put(vaccineParent);
-							obar = concatArray(obar, cob);
-						} else {
-							obo.put("groupMembers", cob);
-							obar.put(obo);
-						}
-					} else {
-						obar.put(obo);
-					}
-				}
-			}
-			
-			enc.put("obs", obar);
-			HttpResponse op = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + ENCOUNTER_URL, "",
-			    enc.toString(), OPENMRS_USER, OPENMRS_PWD);
+			encounter.put(ConnectorConstants.OBS, obsArray);
+			HttpResponse op = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + ENCOUNTER_URL, "", encounter.toString(), OPENMRS_USER, OPENMRS_PWD);
 			return new JSONObject(op.body());
 		}
+	}
+	
+	private JSONArray getObsJsonArray(Event event, Map<String, JSONArray> parent, Map<String, JSONArray> parentChild) throws JSONException {
+		JSONArray obsArray = new JSONArray();
+		
+		for (String ok : parent.keySet()) {
+			for (int i = 0; i < parent.get(ok).length(); i++) {
+				JSONObject obsObject = parent.get(ok).getJSONObject(i);
+				JSONArray childObs = parentChild.get(ok);
+				if (childObs != null && childObs.length() > 0) {
+					//fix for vaccines wrong parent concept remove the if-condition once the right concepts are passed
+					if (event.getEventType().equals(ConnectorConstants.VACCINATION) || event.getEventType().equals(ConnectorConstants.HPV_VACCINATION)) {
+						JSONObject vaccineParent = new JSONObject();
+						vaccineParent.put(ConnectorConstants.CONCEPT, ok);
+						childObs.put(vaccineParent);
+						obsArray = concatArray(obsArray, childObs);
+					} else {
+						obsObject.put(ConnectorConstants.GROUP_MEMBERS, childObs);
+						obsObject.remove(ConnectorConstants.VALUE);
+						obsArray.put(obsObject);
+					}
+				} else {
+					obsArray.put(obsObject);
+				}
+			}
+		}
+		return obsArray;
+	}
+	
+	private JSONObject getEncounterJsonObject(Event event, String patientUuid) throws JSONException {
+		JSONObject encounter = new JSONObject();
+		
+		encounter.put(ConnectorConstants.ENCOUNTER_DATETIME, OPENMRS_DATE.format(event.getEventDate().toDate()));
+		// patient must be existing in OpenMRS before it submits an encounter. if it doesnot it would throw NPE
+		encounter.put(ConnectorConstants.PATIENT, patientUuid);
+		encounter.put(ConnectorConstants.ENCOUNTER_TYPE, event.getEventType());
+		encounter.put(ConnectorConstants.LOCATION, event.getLocationId());
+		
+		makeProvider(encounter, event.getProviderId());
+		return encounter;
 	}
 	
 	private void makeProvider(JSONObject jsonObject, String providerId) {
@@ -206,220 +217,209 @@ public class EncounterService extends OpenmrsService {
 				JSONArray providerRoleArray = new JSONArray();
 				JSONObject providerObj = new JSONObject();
 				providerObj.put(OPENMRS_PROVIDER,
-				    userService.getProvider(null, userService.getUser(providerId).getBaseEntityId()).getString("uuid"));
-				providerObj.put("encounterRole", userService.getEncounterRoleUUID(OPENMRS_PROVIDER));
+						userService.getProvider(null, userService.getUser(providerId).getBaseEntityId()).getString(ConnectorConstants.UUID));
+				providerObj.put(ConnectorConstants.ENCOUNTER_ROLE, userService.getEncounterRoleUUID(OPENMRS_PROVIDER));
 				providerRoleArray.put(providerObj);
-				jsonObject.put("encounterProviders", providerRoleArray);
+				jsonObject.put(ConnectorConstants.ENCOUNTER_PROVIDERS, providerRoleArray);
 			}
-		}
-		catch (JSONException e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public JSONObject buildUpdateEncounter(Event e) throws JSONException {
-		
-		String openmrsuuid = e.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE);
-		JSONObject encounterObsUuids = getObsByEncounterUuid(openmrsuuid);
-		JSONArray obsUuids = encounterObsUuids.getJSONArray("obs");
+	public JSONObject buildUpdateEncounter(Event event) throws JSONException {
+		String openmrsUuid = event.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE);
+		JSONObject encounterObsUuids = getObsByEncounterUuid(openmrsUuid);
+		JSONArray obsUuids = encounterObsUuids.getJSONArray(ConnectorConstants.OBS);
 		
 		System.out.print("[OBS-UUIDS]" + obsUuids);
 		
-		String ptuuid = patientService.getPatientByIdentifierUUID(e.getBaseEntityId());//TODO find by any identifier
-		JSONObject enc = new JSONObject();
+		String patientUuid = patientService.getPatientByIdentifierUUID(event.getBaseEntityId());//TODO find by any identifier
+		JSONObject encounter = getEncounterJsonObject(event, patientUuid);
 		
-		enc.put("encounterDatetime", OPENMRS_DATE.format(e.getEventDate().toDate()));
-		// patient must be existing in OpenMRS before it submits an encounter. if it doesnot it would throw NPE
-		enc.put("patient", ptuuid);
-		enc.put("encounterType", e.getEventType());
-		enc.put("location", e.getLocationId());
-		makeProvider(enc, e.getProviderId());
+		List<Obs> obsList = event.getObs();
+		Map<String, JSONArray> parent = new HashMap<>();
+		Map<String, JSONArray> parentChild = new HashMap<>();
 		
-		List<Obs> ol = e.getObs();
-		Map<String, JSONArray> p = new HashMap<>();
-		Map<String, JSONArray> pc = new HashMap<>();
-		
-		if (ol != null)
-			for (Obs obs : ol) {
+		if (obsList != null)
+			for (Obs obs : obsList) {
 				if (!StringUtils.isEmptyOrWhitespaceOnly(obs.getFieldCode())
-				        && (obs.getFieldType() == null || obs.getFieldType().equalsIgnoreCase("concept"))) {
+						&& (obs.getFieldType() == null || obs.getFieldType().equalsIgnoreCase(ConnectorConstants.CONCEPT))) {
 					//skipping empty obs if no parent simply make it root obs
-					if (obs.getFieldType().equals("concept") && obs.getFormSubmissionField().equals("Birth_Facility_Name")
-					        && obs.getValue() != null
-					        && openmrsLocationService.getLocation(obs.getValue().toString()).getName() != null) {
+					if (obs.getFieldType().equals(ConnectorConstants.CONCEPT) && obs.getFormSubmissionField().equals(ConnectorConstants.BIRTH_FACILITY_NAME)
+							&& obs.getValue() != null
+							&& openmrsLocationService.getLocation(obs.getValue().toString()).getName() != null) {
 						obs.setValue(openmrsLocationService.getLocation(obs.getValue().toString()).getName());
 					}
-					generateObs(p, pc, obs, ol);
+					generateObs(parent, parentChild, obs, obsList);
 				}
 			}
 		
-		JSONArray obar = new JSONArray();
-		for (String ok : p.keySet()) {
-			for (int i = 0; i < p.get(ok).length(); i++) {
-				JSONObject obo = p.get(ok).getJSONObject(i);
-				obo.put("uuid", getObsUuid(obo, obsUuids));
+		JSONArray obsArray = new JSONArray();
+		for (String ok : parent.keySet()) {
+			for (int i = 0; i < parent.get(ok).length(); i++) {
+				JSONObject obsObject = parent.get(ok).getJSONObject(i);
+				obsObject.put(ConnectorConstants.UUID, getObsUuid(obsObject, obsUuids));
 				
-				JSONArray cob = pc.get(ok);
-				if (cob != null && cob.length() > 0) {
+				JSONArray childObs = parentChild.get(ok);
+				if (childObs != null && childObs.length() > 0) {
 					// Fetch children obs uuids
-					JSONObject obsGroupUuids = getObsUuidByParentObsUuid(obo.getString("uuid"));
-					JSONArray groupUuids = obsGroupUuids.getJSONArray("groupMembers");
+					JSONObject obsGroupUuids = getObsUuidByParentObsUuid(obsObject.getString(ConnectorConstants.UUID));
+					JSONArray groupUuids = obsGroupUuids.getJSONArray(ConnectorConstants.GROUP_MEMBERS);
 					// Add uuids to group members
-					for (int j = 0; j < cob.length(); j++) {
-						JSONObject cobObj = cob.getJSONObject(j);
-						cobObj.put("uuid", getObsUuid(cobObj, groupUuids));
+					for (int j = 0; j < childObs.length(); j++) {
+						JSONObject childObsJSONObject = childObs.getJSONObject(j);
+						childObsJSONObject.put(ConnectorConstants.UUID, getObsUuid(childObsJSONObject, groupUuids));
 					}
 					
-					obo.put("groupMembers", cob);
+					obsObject.put(ConnectorConstants.GROUP_MEMBERS, childObs);
+					obsObject.remove(ConnectorConstants.VALUE);
 				}
 				
-				obar.put(obo);
+				obsArray.put(obsObject);
 			}
 		}
-		enc.put("obs", obar);
+		encounter.put(ConnectorConstants.OBS, obsArray);
 		
-		return enc;
+		return encounter;
 	}
 	
-	private void generateObs(Map<String, JSONArray> p, Map<String, JSONArray> pc, Obs obs, List<Obs> ol) {
+	private void generateObs(Map<String, JSONArray> parent, Map<String, JSONArray> parentChild, Obs obs, List<Obs> obsList) {
 		try {
 			if (StringUtils.isEmptyOrWhitespaceOnly(obs.getParentCode())) {
-				
-				p.put(obs.getFieldCode(), convertObsToJson(obs));
-				
+				parent.put(obs.getFieldCode(), convertObsToJson(obs));
 			} else {
 				//find parent obs if not found search and fill or create one
-				JSONArray parentObs = p.get(obs.getParentCode());
+				JSONArray parentObs = parent.get(obs.getParentCode());
 				if (parentObs == null) {
-					p.put(obs.getParentCode(), convertObsToJson(getOrCreateParent(ol, obs)));
+					parent.put(obs.getParentCode(), convertObsToJson(getOrCreateParent(obsList, obs)));
 				}
 				// find if any other exists with same parent if so add to the list otherwise create new list
-				JSONArray obl = pc.get(obs.getParentCode());
-				if (obl == null) {
-					obl = new JSONArray();
+				JSONArray obsArray = parentChild.get(obs.getParentCode());
+				if (obsArray == null) {
+					obsArray = new JSONArray();
 				}
-				JSONArray addobs = convertObsToJson(obs);
-				for (int i = 0; i < addobs.length(); i++) {
-					obl.put(addobs.getJSONObject(i));
+				JSONArray addObs = convertObsToJson(obs);
+				for (int i = 0; i < addObs.length(); i++) {
+					obsArray.put(addObs.getJSONObject(i));
 				}
-				pc.put(obs.getParentCode(), obl);
+				parentChild.put(obs.getParentCode(), obsArray);
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
 	}
 	
-	public JSONObject updateEncounter(Event e) throws JSONException {
-		if (StringUtils.isEmptyOrWhitespaceOnly(e.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE))) {
+	public JSONObject updateEncounter(Event event) throws JSONException {
+		if (StringUtils.isEmptyOrWhitespaceOnly(event.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE))) {
 			throw new IllegalArgumentException("Encounter was never pushed to OpenMRS as " + OPENMRS_UUID_IDENTIFIER_TYPE
-			        + " is empty. Consider creating a new one");
+					+ " is empty. Consider creating a new one");
 		}
 		
-		String openmrsuuid = e.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE);
+		String openmrsUuid = event.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE);
+		JSONObject encounter = buildUpdateEncounter(event);
 		
-		JSONObject enc = buildUpdateEncounter(e);
-		
-		HttpResponse op = HttpUtil.post(
-		    HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + ENCOUNTER_URL + "/" + openmrsuuid, "", enc.toString(),
-		    OPENMRS_USER, OPENMRS_PWD);
-		return new JSONObject(op.body());
+		HttpResponse httpResponse = HttpUtil.post(
+				HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + ENCOUNTER_URL + "/" + openmrsUuid, "", encounter.toString(),
+				OPENMRS_USER, OPENMRS_PWD);
+		return new JSONObject(httpResponse.body());
 	}
 	
 	private String getObsUuid(JSONObject obs, JSONArray obsUuids) throws JSONException {
 		String uuid = "";
 		for (int i = 0; i < obsUuids.length(); i++) {
 			JSONObject obsUuid = obsUuids.getJSONObject(i);
-			JSONObject conceptObj = obsUuid.getJSONObject("concept");
+			JSONObject conceptObj = obsUuid.getJSONObject(ConnectorConstants.CONCEPT);
 			
-			if (conceptObj.get("uuid").equals(obs.get("concept"))) {
-				return obsUuid.getString("uuid");
+			if (conceptObj.get(ConnectorConstants.UUID).equals(obs.get(ConnectorConstants.CONCEPT))) {
+				return obsUuid.getString(ConnectorConstants.UUID);
 			}
 		}
 		
 		return uuid;
 	}
 	
-	private JSONArray convertObsToJson(Obs o) throws JSONException {
-		JSONArray arr = new JSONArray();
-		if (o.getValues() == null || o.getValues().size() == 0) {//must be parent of some obs
-			JSONObject obo = new JSONObject();
-			obo.put("concept", o.getFieldCode());
-			
-			arr.put(obo);
+	private JSONArray convertObsToJson(Obs obs) throws JSONException {
+		JSONArray obsArray = new JSONArray();
+		if (obs.getValues() == null || obs.getValues().size() == 0) {//must be parent of some obs
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put(ConnectorConstants.CONCEPT, obs.getFieldCode());
+			obsArray.put(jsonObject);
 		} else {
 			//OpenMRS can not handle multivalued obs so add obs with multiple values as two different obs
-			for (Object v : o.getValues()) {
-				JSONObject obo = new JSONObject();
-				obo.put("concept", o.getFieldCode());
-				obo.put("value", v);
+			for (Object obsObject : obs.getValues()) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put(ConnectorConstants.CONCEPT, obs.getFieldCode());
+				jsonObject.put(ConnectorConstants.VALUE, obsObject);
 				
-				arr.put(obo);
+				obsArray.put(jsonObject);
 			}
 		}
-		return arr;
+		return obsArray;
 	}
 	
-	private Obs getOrCreateParent(List<Obs> obl, Obs o) {
-		for (Obs obs : obl) {
-			if (o.getParentCode().equalsIgnoreCase(obs.getFieldCode())) {
+	private Obs getOrCreateParent(List<Obs> obsList, Obs observations) {
+		for (Obs obs : obsList) {
+			if (observations.getParentCode().equalsIgnoreCase(obs.getFieldCode())) {
 				return obs;
 			}
 		}
-		return new Obs("concept", "parent", o.getParentCode(), null, null, null, null);
+		return new Obs(ConnectorConstants.CONCEPT, ConnectorConstants.PARENT, observations.getParentCode(), null, null, null, null);
 	}
 	
 	// TODO needs review and refactor
 	public Event convertToEvent(JSONObject encounter) throws JSONException {
-		if (encounter.has("patient") == false) {
+		if (!encounter.has(ConnectorConstants.PATIENT)) {
 			throw new IllegalStateException("No 'patient' object found in given encounter");
 		}
-		Event e = new Event();
-		String patientUuid = encounter.getJSONObject("patient").getString("uuid");
-		Client c = clientService.find(patientUuid);
-		if (c == null || c.getBaseEntityId() == null) {
+		Event event = new Event();
+		String patientUuid = encounter.getJSONObject(ConnectorConstants.PATIENT).getString(ConnectorConstants.UUID);
+		Client client = clientService.find(patientUuid);
+		if (client == null || client.getBaseEntityId() == null) {
 			//try to get the client from openmrs based on the uuid
 			JSONObject openmrsPatient = patientService.getPatientByUuid(patientUuid, false);
-			c = patientService.convertToClient(openmrsPatient);
-			if (c == null || c.getBaseEntityId() == null) {
+			client = patientService.convertToClient(openmrsPatient);
+			if (client == null || client.getBaseEntityId() == null) {
 				throw new IllegalStateException(
-				        "Client was not found registered while converting Encounter to an Event in OpenSRP");
+						"Client was not found registered while converting Encounter to an Event in OpenSRP");
 			} else {
-				clientService.addClient(c);
+				clientService.addClient(client);
 			}
 		}
 		
-		JSONObject creator = encounter.getJSONObject("auditInfo").getJSONObject("creator");
-		e.withBaseEntityId(c.getBaseEntityId())
-		        .withCreator(new User(creator.getString("uuid"), creator.getString("display"), null, null))
-		        .withDateCreated(DateTime.now());
+		JSONObject creator = encounter.getJSONObject(ConnectorConstants.AUDIT_INFO).getJSONObject(ConnectorConstants.CREATOR);
+		event.withBaseEntityId(client.getBaseEntityId())
+				.withCreator(new User(creator.getString(ConnectorConstants.UUID), creator.getString(ConnectorConstants.DISPLAY), null, null))
+				.withDateCreated(DateTime.now());
 		
-		e.withEventDate(new DateTime(encounter.getString("encounterDatetime")))
-		        //.withEntityType(entityType) //TODO
-		        .withEventType(encounter.getJSONObject("encounterType").getString("name"))
-		        //.withFormSubmissionId(formSubmissionId)//TODO
-		        .withLocationId((encounter.has("location") && encounter.get("location") instanceof JSONObject)
-		                ? encounter.getJSONObject("location").getString("name")
-		                : "")
-		        //TODO manage providers and uuid in couch
-		        .withProviderId(creator.getString("display")).withVoided(encounter.getBoolean("voided"));
+		event.withEventDate(new DateTime(encounter.getString(ConnectorConstants.ENCOUNTER_DATETIME)))
+				//.withEntityType(entityType) //TODO
+				.withEventType(encounter.getJSONObject(ConnectorConstants.ENCOUNTER_TYPE).getString(ConnectorConstants.NAME))
+				//.withFormSubmissionId(formSubmissionId)//TODO
+				.withLocationId((encounter.has(ConnectorConstants.LOCATION) && encounter.get(ConnectorConstants.LOCATION) instanceof JSONObject)
+						? encounter.getJSONObject(ConnectorConstants.LOCATION).getString(ConnectorConstants.NAME)
+						: "")
+				//TODO manage providers and uuid in couch
+				.withProviderId(creator.getString(ConnectorConstants.DISPLAY)).withVoided(encounter.getBoolean(ConnectorConstants.VOIDED));
 		
-		e.addIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE, encounter.getString("uuid"));
+		event.addIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE, encounter.getString(ConnectorConstants.UUID));
 		
-		JSONArray ol = encounter.getJSONArray("obs");
-		for (int i = 0; i < ol.length(); i++) {
-			JSONObject o = ol.getJSONObject(i);
+		JSONArray observations = encounter.getJSONArray(ConnectorConstants.OBS);
+		for (int i = 0; i < observations.length(); i++) {
+			JSONObject observation = observations.getJSONObject(i);
 			List<Object> values = new ArrayList<Object>();
-			if (o.optJSONObject("value") != null) {
-				values.add(o.getJSONObject("value").getString("uuid"));
-			} else if (o.has("value")) {
-				values.add(o.getString("value"));
+			
+			if (observation.optJSONObject(ConnectorConstants.VALUE) != null) {
+				values.add(observation.getJSONObject(ConnectorConstants.VALUE).getString(ConnectorConstants.UUID));
+			} else if (observation.has(ConnectorConstants.VALUE)) {
+				values.add(observation.getString(ConnectorConstants.VALUE));
 			}
-			e.addObs(new Obs(null, null, o.getJSONObject("concept").getString("uuid"), null /*//TODO handle parent*/, values,
-			        null/*comments*/, null/*formSubmissionField*/));
+			
+			event.addObs(new Obs(null, null, observation.getJSONObject(ConnectorConstants.CONCEPT).getString(ConnectorConstants.UUID), null /*//TODO handle parent*/, values,
+					null/*comments*/, null/*formSubmissionField*/));
 		}
 		
-		return e;
+		return event;
 	}
 	
 	private JSONArray concatArray(JSONArray... arrs) throws JSONException {

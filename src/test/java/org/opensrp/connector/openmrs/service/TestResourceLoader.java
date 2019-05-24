@@ -18,33 +18,20 @@ import com.google.gson.JsonIOException;
 import com.mysql.jdbc.StringUtils;
 
 public class TestResourceLoader {
-	
 	protected static String openmrsOpenmrsUrl;
-	
 	protected static String openmrsUsername;
-	
 	protected static String openmrsPassword;
-	
+	protected String openmrsVersion;
 	protected String formDirPath;
-	
 	protected String dhis2Url;
-	
 	protected String dhis2Username;
-	
 	protected String dhis2Password;
-	
 	protected boolean pushToOpenmrsForTest;
-	
 	protected PatientService patientService;
-	
 	protected EncounterService encounterService;
-	
 	protected DHIS2DatasetPush dhis2DatasetPush;
-	
 	protected OpenmrsLocationService openmrsLocationService;
-	
 	protected String couchDBUserName;
-	
 	protected String couchDBPassword;
 	
 	public TestResourceLoader() throws IOException {
@@ -53,6 +40,7 @@ public class TestResourceLoader {
 		openmrsOpenmrsUrl = props.getProperty("openmrs.url");
 		openmrsUsername = props.getProperty("openmrs.username");
 		openmrsPassword = props.getProperty("openmrs.password");
+		openmrsVersion = props.getProperty("openmrs.version");
 		formDirPath = props.getProperty("form.directory.name");
 		
 		dhis2Url = props.getProperty("dhis2.url");
@@ -63,7 +51,7 @@ public class TestResourceLoader {
 		pushToOpenmrsForTest = StringUtils.isEmptyOrWhitespaceOnly(rc) ? false : Boolean.parseBoolean(rc);
 		
 		this.patientService = new PatientService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
-		this.encounterService = new EncounterService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
+		this.encounterService = new EncounterService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword, openmrsVersion);
 		this.openmrsLocationService = new OpenmrsLocationService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 		this.dhis2DatasetPush = new DHIS2DatasetPush(dhis2Url, dhis2Username, dhis2Password);
 		this.encounterService.setPatientService(patientService);
