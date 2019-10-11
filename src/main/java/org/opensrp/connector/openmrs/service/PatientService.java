@@ -369,7 +369,7 @@ public class PatientService extends OpenmrsService {
 				} else {
 					JSONObject patientJson = createPatient(c);
 					patient = patientJson;//only for test code purpose
-					if (patientJson != null && patientJson.optString("uuid") != null) {
+					if (patientJson != null && !StringUtils.isNullOrEmpty(patientJson.optString("uuid"))) {
 						c.addIdentifier(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE, patientJson.getString("uuid"));
 						clientService.addorUpdate(c, false);
 					}
@@ -592,7 +592,7 @@ public class PatientService extends OpenmrsService {
 	
 	public JSONObject createPatient(Client c) throws JSONException {
 		String personUUIDString = createPerson(c).optString("uuid");
-		if(personUUIDString !=null) {
+		if(!StringUtils.isNullOrEmpty(personUUIDString)) {
 			JSONObject p = new JSONObject();
 			p.put("person", personUUIDString);
 			

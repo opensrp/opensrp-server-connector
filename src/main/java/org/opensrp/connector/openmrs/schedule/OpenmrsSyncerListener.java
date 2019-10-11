@@ -7,15 +7,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.opensrp.connector.dhis2.Dhis2TrackCaptureConnector;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants.SchedulerConfig;
 import org.opensrp.connector.openmrs.service.EncounterService;
 import org.opensrp.connector.openmrs.service.PatientService;
 import org.opensrp.domain.AppStateToken;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
-import org.opensrp.scheduler.service.ActionService;
-import org.opensrp.scheduler.service.ScheduleService;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.ConfigService;
 import org.opensrp.service.ErrorTraceService;
@@ -32,10 +29,6 @@ public class OpenmrsSyncerListener {
 	
 	private static Logger logger = LoggerFactory.getLogger(OpenmrsSyncerListener.class.toString());
 	
-	private final ScheduleService opensrpScheduleService;
-	
-	private final ActionService actionService;
-	
 	private final ConfigService config;
 	
 	private final ErrorTraceService errorTraceService;
@@ -49,15 +42,9 @@ public class OpenmrsSyncerListener {
 	private final ClientService clientService;
 	
 	@Autowired
-	private Dhis2TrackCaptureConnector dhis2TrackCaptureConnector;
-	
-	@Autowired
-	public OpenmrsSyncerListener(ScheduleService opensrpScheduleService, ActionService actionService, ConfigService config,
-	    ErrorTraceService errorTraceService, PatientService patientService, EncounterService encounterService,
-	    ClientService clientService, EventService eventService) {
+	public OpenmrsSyncerListener(ConfigService config, ErrorTraceService errorTraceService, PatientService patientService,
+	    EncounterService encounterService, ClientService clientService, EventService eventService) {
 		
-		this.opensrpScheduleService = opensrpScheduleService;
-		this.actionService = actionService;
 		this.config = config;
 		this.errorTraceService = errorTraceService;
 		this.patientService = patientService;

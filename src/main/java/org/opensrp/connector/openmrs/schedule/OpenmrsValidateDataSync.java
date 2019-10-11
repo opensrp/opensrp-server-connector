@@ -111,7 +111,7 @@ public class OpenmrsValidateDataSync {
 			Calendar calendar = Calendar.getInstance();
 			calendar.add(Calendar.HOUR, -WAIT_TIME_IN_HOURS);
 			
-			logger.info("VALIDATING CLIENTS - EVENTS " + DateTime.now());
+			logger.info("VALIDATING CLIENTS " + DateTime.now());
 			
 			AppStateToken lastValidated = config
 			        .getAppStateTokenByName(SchedulerConfig.openmrs_client_sync_validator_timestamp);
@@ -130,7 +130,7 @@ public class OpenmrsValidateDataSync {
 	}
 	
 	private void pushValidateClient(List<Client> cl) throws JSONException {
-		try {
+		try {	
 			
 			JSONArray patientsJsonArray = new JSONArray();
 			
@@ -155,6 +155,8 @@ public class OpenmrsValidateDataSync {
 		try {
 			Calendar calendar = Calendar.getInstance();
 			calendar.add(Calendar.HOUR, -WAIT_TIME_IN_HOURS);
+			
+			logger.info("VALIDATING EVENTS " + DateTime.now());
 			
 			boolean processed = processEvents(BIRTH_REGISTRATION_EVENT, calendar);
 			if (processed) {
