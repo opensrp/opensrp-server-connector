@@ -171,10 +171,10 @@ public class OpenmrsUserService extends OpenmrsService {
 		        HttpUtil.post(getURL() + "/" + PROVIDER_URL, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
-	public JSONObject getUsers(Integer limit, Integer offset) throws JSONException {
+	public JSONObject getUsers(int limit, int offset) throws JSONException {
 		
-		String params = String.format("limit=%d&startIndex=%d&v=v=custom:(uuid,display,person,person:(display))",
-		    limit == null || limit == 0 ? 25 : limit, offset == null || offset == 0 ? 0 : limit);
+		String params = String.format("limit=%d&startIndex=%d&v=custom:(uuid,display,person,person:(display))",
+		    limit == 0 ? 25 : limit, offset);
 		HttpResponse op = HttpUtil.get(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + USER_URL, params, OPENMRS_USER,
 		    OPENMRS_PWD);
 		JSONObject res = new JSONObject(op.body());
