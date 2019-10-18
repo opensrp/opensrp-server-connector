@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,6 +14,8 @@ import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
 import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
+import org.opensrp.web.controller.UserController;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.StringUtils;
@@ -52,6 +55,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	private Location makeLocation(String locationJson) throws JSONException {
+		LoggerFactory.getLogger(this.getClass()).info("makeLocation: "+locationJson);
 		JSONObject obj = new JSONObject(locationJson);
 		Location p = getParent(obj);
 		Location l = new Location(obj.getString("uuid"), obj.getString("name"), null, null, p, null, null);
@@ -71,6 +75,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 			}
 		}
 		
+		LoggerFactory.getLogger(this.getClass()).info("location: "+ReflectionToStringBuilder.toString(l));
 		return l;
 	}
 	
@@ -115,11 +120,13 @@ public class OpenmrsLocationService extends OpenmrsService {
 		for (String loc : locationIdsOrNames) {
 			String locTreeId = fillTreeWithHierarchy(ltr, loc);
 			Location lp = ltr.findLocation(locTreeId).getParentLocation();
+			LoggerFactory.getLogger(this.getClass()).info("getLocationTreeOf node: "+ReflectionToStringBuilder.toString(lp));
 			if (lp != null) {
 				fillTreeWithUpperHierarchy(ltr, lp.getLocationId());
 			}
 		}
 		
+		LoggerFactory.getLogger(this.getClass()).info("getLocationTreeOf tree: "+ReflectionToStringBuilder.toString(ltr));
 		return ltr;
 	}
 	
