@@ -1,24 +1,34 @@
 package org.opensrp.connector.openmrs.service;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
-import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.StringUtils;
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Credentials;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 @Service
 public class OpenmrsLocationService extends OpenmrsService {
+	
+	private static Logger logger = LoggerFactory.getLogger(OpenmrsLocationService.class);
 	
 	private static final String LOCATION_URL = "ws/rest/v1/location";
 	
@@ -29,14 +39,33 @@ public class OpenmrsLocationService extends OpenmrsService {
 		super(openmrsUrl, user, password);
 	}
 	
-	public Location getLocation(String locationIdOrName) throws JSONException {
-		HttpResponse op = HttpUtil.get(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
-		        + (locationIdOrName.replaceAll(" ", "%20")),
-		    "v=full", OPENMRS_USER, OPENMRS_PWD);
-		
-		if (!StringUtils.isEmptyOrWhitespaceOnly(op.body()) && (new JSONObject(op.body())).has("uuid")) {
-			return makeLocation(op.body());
+	private String getURL(String url) {
+		Request request = new Request.Builder().url(url)
+		        .addHeader("Authorization", Credentials.basic(OPENMRS_USER, OPENMRS_PWD)).build();
+		OkHttpClient client = new OkHttpClient();
+		Call call = client.newCall(request);
+		Response response;
+		try {
+			response = call.execute();
+			String responseBody=response.body().string();
+			if (!StringUtils.isEmptyOrWhitespaceOnly(responseBody)) {
+				return responseBody;
+			}
 		}
+		catch (IOException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return null;
+		
+	}
+	
+	public Location getLocation(String locationIdOrName) throws JSONException {
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
+		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
+		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has("uuid"))) {
+			return makeLocation(response);
+		}
+		
 		return null;
 	}
 	
@@ -52,6 +81,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	private Location makeLocation(String locationJson) throws JSONException {
+		logger.info("makeLocation: " + locationJson);
 		JSONObject obj = new JSONObject(locationJson);
 		Location p = getParent(obj);
 		Location l = new Location(obj.getString("uuid"), obj.getString("name"), null, null, p, null, null);
@@ -65,12 +95,13 @@ public class OpenmrsLocationService extends OpenmrsService {
 		
 		for (int i = 0; i < a.length(); i++) {
 			boolean voided = a.getJSONObject(i).optBoolean("voided");
-			if(!voided){
+			if (!voided) {
 				String ad = a.getJSONObject(i).getString("display");
 				l.addAttribute(ad.substring(0, ad.indexOf(":")), ad.substring(ad.indexOf(":") + 2));
 			}
 		}
 		
+		logger.info("location: " + ReflectionToStringBuilder.toString(l));
 		return l;
 	}
 	
@@ -80,10 +111,9 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	public LocationTree getLocationTree() throws JSONException {
 		LocationTree ltr = new LocationTree();
-		HttpResponse op = HttpUtil.get(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL, "v=full",
-		    OPENMRS_USER, OPENMRS_PWD);
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL+ "?v=full");
 		
-		JSONArray res = new JSONObject(op.body()).getJSONArray("results");
+		JSONArray res = new JSONObject(response).getJSONArray("results");
 		if (res.length() == 0) {
 			return ltr;
 		}
@@ -115,21 +145,25 @@ public class OpenmrsLocationService extends OpenmrsService {
 		for (String loc : locationIdsOrNames) {
 			String locTreeId = fillTreeWithHierarchy(ltr, loc);
 			Location lp = ltr.findLocation(locTreeId).getParentLocation();
+			LoggerFactory.getLogger(this.getClass())
+			        .info("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
 			if (lp != null) {
 				fillTreeWithUpperHierarchy(ltr, lp.getLocationId());
 			}
 		}
 		
+		LoggerFactory.getLogger(this.getClass()).info("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
 		return ltr;
 	}
 	
 	private String fillTreeWithHierarchy(LocationTree ltr, String locationIdOrName) throws JSONException {
-		HttpResponse op = HttpUtil.get(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
-		        + (locationIdOrName.replaceAll(" ", "%20")),
-		    "v=full", OPENMRS_USER, OPENMRS_PWD);
 		
-		JSONObject lo = new JSONObject(op.body());
-		Location l = makeLocation(op.body());
+		
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
+		        + (locationIdOrName.replaceAll(" ", "%20"))+"?v=full");
+		
+		JSONObject lo = new JSONObject(response);
+		Location l = makeLocation(response);
 		ltr.addLocation(l);
 		
 		if (lo.has("childLocations")) {
@@ -145,11 +179,11 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	private void fillTreeWithUpperHierarchy(LocationTree ltr, String locationId) throws JSONException {
-		HttpResponse op = HttpUtil.get(
-		    HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/" + (locationId.replaceAll(" ", "%20")),
-		    "v=full", OPENMRS_USER, OPENMRS_PWD);
 		
-		Location l = makeLocation(op.body());
+		String response = getURL( HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/" + (locationId.replaceAll(" ", "%20"))+
+		    "?v=full");
+	
+		Location l = makeLocation(response);
 		ltr.addLocation(l);
 		
 		if (l.getParentLocation() != null) {
