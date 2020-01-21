@@ -2,10 +2,14 @@ package org.opensrp.connector.openmrs.service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.opensrp.common.util.HttpUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.mysql.jdbc.StringUtils;
 
 @Component
 public abstract class OpenmrsService {
@@ -67,6 +71,26 @@ public abstract class OpenmrsService {
 	
 	public static void main(String[] args) {
 		System.out.println(OPENMRS_DATE.format(new Date()));
+	}
+	
+	public Map<String, String> getURlQuery(String name, int limit, int startIndex) {
+		Map<String, String> queryMap = new HashMap<String, String>();
+		String query = "";
+		String limitQuery = "";
+		String startIndexQuery = "";
+		if (!StringUtils.isEmptyOrWhitespaceOnly(name)) {
+			query = "&q=" + name;
+			queryMap.put("query", query);
+		}
+		if (startIndex != 0) {
+			startIndexQuery = "&startIndex=" + startIndex;
+			queryMap.put("startIndexQuery", startIndexQuery);
+		}
+		if (limit != 0) {
+			limitQuery = "&limit=" + limit;
+			queryMap.put("limitQuery", limitQuery);
+		}
+		return queryMap;
 	}
 	
 }

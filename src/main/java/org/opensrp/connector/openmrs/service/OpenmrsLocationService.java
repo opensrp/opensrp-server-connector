@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
+import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		Response response;
 		try {
 			response = call.execute();
-			String responseBody=response.body().string();
+			String responseBody = response.body().string();
 			if (!StringUtils.isEmptyOrWhitespaceOnly(responseBody)) {
 				return responseBody;
 			}
@@ -70,9 +71,8 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	public Location getParent(JSONObject locobj) throws JSONException {
-		JSONObject parentL = (locobj.has("parentLocation") && !locobj.isNull("parentLocation"))
-		        ? locobj.getJSONObject("parentLocation")
-		        : null;
+		JSONObject parentL = (locobj.has("parentLocation") && !locobj.isNull("parentLocation")) ? locobj
+		        .getJSONObject("parentLocation") : null;
 		
 		if (parentL != null) {
 			return new Location(parentL.getString("uuid"), parentL.getString("display"), null, getParent(parentL));
@@ -111,7 +111,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	public LocationTree getLocationTree() throws JSONException {
 		LocationTree ltr = new LocationTree();
-		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL+ "?v=full");
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "?v=full");
 		
 		JSONArray res = new JSONObject(response).getJSONArray("results");
 		if (res.length() == 0) {
@@ -145,8 +145,8 @@ public class OpenmrsLocationService extends OpenmrsService {
 		for (String loc : locationIdsOrNames) {
 			String locTreeId = fillTreeWithHierarchy(ltr, loc);
 			Location lp = ltr.findLocation(locTreeId).getParentLocation();
-			LoggerFactory.getLogger(this.getClass())
-			        .info("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
+			LoggerFactory.getLogger(this.getClass()).info(
+			    "getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
 			if (lp != null) {
 				fillTreeWithUpperHierarchy(ltr, lp.getLocationId());
 			}
@@ -158,9 +158,8 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	private String fillTreeWithHierarchy(LocationTree ltr, String locationIdOrName) throws JSONException {
 		
-		
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
-		        + (locationIdOrName.replaceAll(" ", "%20"))+"?v=full");
+		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
 		
 		JSONObject lo = new JSONObject(response);
 		Location l = makeLocation(response);
@@ -180,9 +179,9 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	private void fillTreeWithUpperHierarchy(LocationTree ltr, String locationId) throws JSONException {
 		
-		String response = getURL( HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/" + (locationId.replaceAll(" ", "%20"))+
-		    "?v=full");
-	
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
+		        + (locationId.replaceAll(" ", "%20")) + "?v=full");
+		
 		Location l = makeLocation(response);
 		ltr.addLocation(l);
 		
@@ -237,12 +236,8 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	public enum AllowedLevels {
-		COUNTRY("Country"),
-		PROVINCE("Province"),
-		DISTRICT("District"),
-		COUNTY("County"),
-		SUB_COUNTY("Sub-county"),
-		HEALTH_FACILITY("Health Facility");
+		COUNTRY("Country"), PROVINCE("Province"), DISTRICT("District"), COUNTY("County"), SUB_COUNTY("Sub-county"), HEALTH_FACILITY(
+		        "Health Facility");
 		
 		private final String display;
 		
@@ -256,4 +251,61 @@ public class OpenmrsLocationService extends OpenmrsService {
 		}
 		
 	};
+	
+	public JSONObject addLocation(String location) {
+		JSONObject response = new JSONObject();
+		try {
+			response = new JSONObject(HttpUtil.post(getURL() + "/" + LOCATION_URL, "", location, OPENMRS_USER, OPENMRS_PWD)
+			        .body());
+			System.err.println(response);
+		}
+		catch (JSONException e) {
+			logger.error(e.fillInStackTrace() + "");
+		}
+		return response;
+	}
+	
+	public JSONObject updateLocation(String location, String uuid) {
+		JSONObject response = new JSONObject();
+		try {
+			response = new JSONObject(HttpUtil.post(getURL() + "/" + LOCATION_URL + "/" + uuid, "", location, OPENMRS_USER,
+			    OPENMRS_PWD).body());
+			System.err.println(response);
+		}
+		catch (JSONException e) {
+			logger.error(e.fillInStackTrace() + "");
+		}
+		return response;
+	}
+	
+	public Integer deleteLocation(String uuid) {
+		HttpResponse response = HttpUtil.delete(getURL() + "/" + LOCATION_URL + "/" + uuid, "purge=true", OPENMRS_USER,
+		    OPENMRS_PWD);
+		return response.statusCode();
+	}
+	
+	public JSONObject searchLocations(String name, int limit, int startIndex) {
+		JSONObject response = new JSONObject();
+		
+		Map<String, String> getURlQuery = getURlQuery(name, limit, startIndex);
+		String query = "";
+		String limitQuery = "";
+		String startIndexQuery = "";
+		if (getURlQuery.containsKey("query"))
+			query = getURlQuery.get("query");
+		if (getURlQuery.containsKey("limitQuery"))
+			limitQuery = getURlQuery.get("limitQuery");
+		if (getURlQuery.containsKey("startIndexQuery"))
+			startIndexQuery = getURlQuery.get("startIndexQuery");
+		try {
+			response = new JSONObject(HttpUtil.get(getURL() + "/" + LOCATION_URL,
+			    "v=full" + query + limitQuery + startIndexQuery, OPENMRS_USER, OPENMRS_PWD).body());
+		}
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return response;
+	}
 }
