@@ -13,7 +13,7 @@ import org.opensrp.connector.openmrs.service.OpenmrsLocationTagService;
 
 public class OpenmrsLocationTagTest extends OpenmrsApiService {
 	
-	OpenmrsLocationTagService ls;
+	private OpenmrsLocationTagService openmrsLocationTagService;
 	
 	public OpenmrsLocationTagTest() throws IOException {
 		super();
@@ -21,23 +21,23 @@ public class OpenmrsLocationTagTest extends OpenmrsApiService {
 	
 	@Before
 	public void setup() throws IOException {
-		ls = new OpenmrsLocationTagService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
+		openmrsLocationTagService = new OpenmrsLocationTagService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 	}
 	
 	@Test
 	public void addUpdateDeleteSearchLocationTag() {
 		String uuid = "";
 		try {
-			JSONObject response = ls.addLocationTag(locationTagname);
+			JSONObject response = openmrsLocationTagService.addLocationTag(locationTagname);
 			String locationTagName = response.getString(nameKey);
 			assertEquals(locationTagname, locationTagName);
 			uuid = response.getString(uuidKey);
-			JSONObject updateResponse = ls.updateLocationTag(locationTagnameUpdated, uuid);
+			JSONObject updateResponse = openmrsLocationTagService.updateLocationTag(locationTagnameUpdated, uuid);
 			String updatedLocationTagName = updateResponse.getString(nameKey);
 			assertEquals(locationTagnameUpdated, updatedLocationTagName);
 			searchLocationTags(locationTagnameUpdated);
 			uuid = response.getString(uuidKey);
-			Integer statusCode = ls.deleteLocationTag(uuid);
+			Integer statusCode = openmrsLocationTagService.deleteLocationTag(uuid);
 			assertEquals(204, statusCode.intValue());
 			
 		}
@@ -48,7 +48,7 @@ public class OpenmrsLocationTagTest extends OpenmrsApiService {
 	
 	private void searchLocationTags(String name) {
 		JSONObject searchResponse = new JSONObject();
-		searchResponse = ls.searchLocationTags(name, 0, 0);
+		searchResponse = openmrsLocationTagService.searchLocationTags(name, 0, 0);
 		JSONArray responseArray = new JSONArray();
 		try {
 			responseArray = searchResponse.getJSONArray("results");
