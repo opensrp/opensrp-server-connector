@@ -20,7 +20,7 @@ public class OpenmrsLocationTagTest extends OpenmrsApiService {
 	}
 	
 	@Before
-	public void setup() throws IOException {
+	public void setUp() throws IOException {
 		openmrsLocationTagService = new OpenmrsLocationTagService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 	}
 	
