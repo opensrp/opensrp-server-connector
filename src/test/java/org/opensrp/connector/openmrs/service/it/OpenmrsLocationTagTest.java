@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
@@ -38,7 +37,6 @@ public class OpenmrsLocationTagTest extends OpenmrsApiService {
 		openmrsLocationTagService = new OpenmrsLocationTagService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 	}
 	
-	@Ignore
 	@Test
 	public void addUpdateDeleteSearchLocationTag() {
 		String uuid = "";
@@ -74,14 +72,13 @@ public class OpenmrsLocationTagTest extends OpenmrsApiService {
 			
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
 		}
 		
 	}
 	
 	@Test
-	public void testUser() throws JSONException {
+	public void testSearchLocationTag() throws JSONException {
 		BDDMockito
 		        .given(HttpUtil.get(any(String.class), any(String.class), any(String.class), any(String.class)))
 		        .willReturn(
