@@ -20,7 +20,7 @@
         <nexus-staging-maven-plugin.version>1.5.1</nexus-staging-maven-plugin.version>
 
         <opensrp.api.version>1.0.1</opensrp.api.version>
-        <opensrp.core.version>1.0.1</opensrp.core.version>
+        <opensrp.core.version>1.3.4-SNAPSHOT</opensrp.core.version>
 
     </properties>
 
