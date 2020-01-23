@@ -63,7 +63,6 @@ public class OpenmrsLocationTagService extends OpenmrsService {
 	}
 	
 	public JSONObject searchLocationTags(String name, int limit, int startIndex) {
-		System.err.println(limit + ":" + startIndex);
 		JSONObject response = new JSONObject();
 		Map<String, String> getURlQuery = getURlQuery(name, limit, startIndex);
 		String query = "";
