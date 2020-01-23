@@ -98,13 +98,21 @@ public abstract class OpenmrsApiService extends TestResourceLoader {
 	
 	int indexKey = 0;
 	
+	public String ROLENAME = "Test Role";
+	
+	public String ROLENAMEUPDATED = "Test Role Updated";
+	
+	public String LocationName = "Test location";
+	
+	public String LocationNameUpdated = "Test location updated";
+	
 	public JSONObject createPerson(String fn, String mn, String ln) throws JSONException {
 		
 		person.put(genderKey, female);
 		person.put(birthdateKey, "2017-01-01");
 		person.put(ageKey, "32");
-		person.put(namesKey,
-		    new JSONArray("[{\"givenName\":\"" + fn + "\",\"middleName\":\"" + mn + "\", \"familyName\":\"" + ln + "\"}]"));
+		person.put(namesKey, new JSONArray("[{\"givenName\":\"" + fn + "\",\"middleName\":\"" + mn + "\", \"familyName\":\""
+		        + ln + "\"}]"));
 		String response = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_URL) + "/" + PERSON_URL, "", person.toString(),
 		    openmrsUsername, openmrsPassword).body();
 		
@@ -122,8 +130,8 @@ public abstract class OpenmrsApiService extends TestResourceLoader {
 		person.put(genderKey, female);
 		person.put(birthdateKey, "2017-02-01");
 		person.put(ageKey, "32");
-		person.put(namesKey,
-		    new JSONArray("[{\"givenName\":\"" + fn + "\",\"middleName\":\"" + mn + "\", \"familyName\":\"" + ln + "\"}]"));
+		person.put(namesKey, new JSONArray("[{\"givenName\":\"" + fn + "\",\"middleName\":\"" + mn + "\", \"familyName\":\""
+		        + ln + "\"}]"));
 		JSONObject user = new JSONObject();
 		user.put(usernameKey, userName);
 		user.put(passwordKey, password);
@@ -148,20 +156,19 @@ public abstract class OpenmrsApiService extends TestResourceLoader {
 	}
 	
 	public void deletePersonAttributeType(String uuid) {
-		HttpResponse od = HttpUtil.delete(
-		    HttpUtil.removeEndingSlash(OPENMRS_URL) + "/ws/rest/v1/personattributetype/" + uuid + purgePartUrl, "",
-		    openmrsUsername, openmrsPassword);
+		HttpResponse od = HttpUtil.delete(HttpUtil.removeEndingSlash(OPENMRS_URL) + "/ws/rest/v1/personattributetype/"
+		        + uuid + purgePartUrl, "", openmrsUsername, openmrsPassword);
 	}
 	
 	public void deleteUser(String uuid) {
-		HttpResponse od = HttpUtil.delete(
-		    HttpUtil.removeEndingSlash(OPENMRS_URL) + "/ws/rest/v1/user/" + uuid + purgePartUrl, "", openmrsUsername,
-		    openmrsPassword);
+		HttpResponse od = HttpUtil.delete(HttpUtil.removeEndingSlash(OPENMRS_URL) + "/ws/rest/v1/user/" + uuid
+		        + purgePartUrl, "", openmrsUsername, openmrsPassword);
 	}
 	
 	public void deleteIdentifierType(String uuid) {
-		HttpUtil.delete(HttpUtil.removeEndingSlash(OPENMRS_URL) + "/ws/rest/v1/patientidentifiertype/" + uuid + purgePartUrl,
-		    "", openmrsUsername, openmrsPassword);
+		HttpUtil.delete(
+		    HttpUtil.removeEndingSlash(OPENMRS_URL) + "/ws/rest/v1/patientidentifiertype/" + uuid + purgePartUrl, "",
+		    openmrsUsername, openmrsPassword);
 	}
 	
 	public void deleteProvider(String uuid) {
