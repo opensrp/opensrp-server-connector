@@ -256,12 +256,12 @@ public class OpenmrsLocationService extends OpenmrsService {
 		
 	};
 
-	public List<Location> getLocationsWithinAHierarchyLevel(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
+	public List<Location> getLocationsByLevelAndTags(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
 		List<Location> allLocationsList = new ArrayList<>();
 		allLocationsList = getAllLocations(allLocationsList,0);
 		String locationsJson = new Gson().toJson(allLocationsList);
 		logger.info(locationsJson);
-		return getLocationsByTagsAndHierarchyLevel(uuid, allLocationsList,locationTopLevel,locationTagsQueried);
+		return getLocationsByLevelAndTagsFromAllLocationsList(uuid, allLocationsList,locationTopLevel,locationTagsQueried);
 	}
 
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
@@ -271,7 +271,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has("results")) {
 			JSONArray results = new JSONObject(response).getJSONArray("results");
 			for (int i = 0; i < results.length(); i++) {
-				locationList.add(formLocation(results.getJSONObject(i).toString()));
+				locationList.add(makeLocation(results.getJSONObject(i)));
 			}
 			return getAllLocations(locationList,startIndex+100);
 
@@ -279,30 +279,6 @@ public class OpenmrsLocationService extends OpenmrsService {
 		return  locationList;
 	}
 
-
-	private Location formLocation(String locationJson) throws JSONException {
-		logger.info("makeLocation: {}", locationJson);
-		JSONObject obj = new JSONObject(locationJson);
-		Location parentLocation = this.getParent(obj);
-		Location location = new Location(obj.getString("uuid"), obj.getString("name"),
-				null, null, parentLocation, null, null);
-		JSONArray tags = obj.getJSONArray("tags");
-
-		for (int i = 0; i < tags.length(); ++i) {
-			location.addTag(tags.getJSONObject(i).getString("display"));
-		}
-
-		JSONArray attributes = obj.getJSONArray("attributes");
-
-		for (int i = 0; i < attributes.length(); ++i) {
-			boolean voided = attributes.getJSONObject(i).optBoolean("voided");
-			if (!voided) {
-				String ad = attributes.getJSONObject(i).getString("display");
-				location.addAttribute(ad.substring(0, ad.indexOf(':')), ad.substring(ad.indexOf(':') + 2));
-			}
-		}
-		return location;
-	}
 
 	/**
 	 * This method is used to obtain locations within a hierarchy level by passing the following parameters
@@ -320,7 +296,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	 *                            for villages and health facilities, this json array would contain both tag names
 	 * @return returns a list of all locations matching the above criteria
 	 */
-	public List<Location> getLocationsByTagsAndHierarchyLevel(String uuid, List<Location> allLocations, String locationTopLevel,  JSONArray locationTagsQueried) {
+	public List<Location> getLocationsByLevelAndTagsFromAllLocationsList(String uuid, List<Location> allLocations, String locationTopLevel, JSONArray locationTagsQueried) {
 		Location location=null;
 		for (Location allLocation : allLocations) {
 			if (allLocation.getLocationId().equals(uuid)) {
@@ -334,7 +310,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		}
 
 		if (!location.getTags().contains(locationTopLevel)) {
-			return getLocationsByTagsAndHierarchyLevel(location.getParentLocation().getLocationId(), allLocations,locationTopLevel,locationTagsQueried);
+			return getLocationsByLevelAndTagsFromAllLocationsList(location.getParentLocation().getLocationId(), allLocations,locationTopLevel,locationTagsQueried);
 		}
 
 		if (location.getTags().contains(locationTopLevel)) {
