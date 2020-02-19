@@ -74,10 +74,10 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 
 		List<Location> councilFacilities = openmrsLocationService.getLocationsByLevelAndTagsFromAllLocationsList("25820e25-76c5-455a-812d-0934db2564f5", allLocations,locationTopLevel,locationTagsQueried);
 
-		Assert.assertEquals(3, councilFacilities.size());
-		Assert.assertEquals("Ebrahim Haji", councilFacilities.get(0).getName());
-		Assert.assertEquals("Madona", councilFacilities.get(1).getName());
-		Assert.assertEquals("Mnazi Mmoja", councilFacilities.get(2).getName());
+		assertEquals(3, councilFacilities.size());
+		assertEquals("Ebrahim Haji", councilFacilities.get(0).getName());
+		assertEquals("Madona", councilFacilities.get(1).getName());
+		assertEquals("Mnazi Mmoja", councilFacilities.get(2).getName());
 
 	}
 }
