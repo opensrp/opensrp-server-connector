@@ -9,7 +9,6 @@ import java.util.List;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensrp.api.domain.Location;
