@@ -265,7 +265,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
-		String response = this.obtainURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + "ws/rest/v1/location" +
+		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + "ws/rest/v1/location" +
 				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display),attributes)&limit=100&startIndex="+startIndex);
 		logger.info("response received : {} ", response);
 		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has("results")) {
@@ -279,23 +279,6 @@ public class OpenmrsLocationService extends OpenmrsService {
 		return  locationList;
 	}
 
-	private String obtainURL(String url) {
-		Request request = (new Request.Builder()).url(url).addHeader("Authorization", Credentials.basic(this.OPENMRS_USER, this.OPENMRS_PWD)).build();
-		OkHttpClient client = new OkHttpClient();
-		Call call = client.newCall(request);
-
-		try {
-			Response response = call.execute();
-			String responseBody = response.body().string();
-			if (!StringUtils.isEmptyOrWhitespaceOnly(responseBody)) {
-				return responseBody;
-			}
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		}
-
-		return null;
-	}
 
 	private Location formLocation(String locationJson) throws JSONException {
 		logger.info("makeLocation: {}", locationJson);
