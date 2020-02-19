@@ -25,4 +25,8 @@ public class ConnectorConstants {
 	public static final String ENCOUNTER_ROLE = "encounterRole";
 	public static final String ENCOUNTER_PROVIDERS = "encounterProviders";
 	public static final String IDENTIFIER = "identifier";
+	public static final String PARENT_LOCATION = "parentLocation";
+	public static final String TAGS = "tags";
+	public static final String ATTRIBUTES = "attributes";
+	public static final String CHILD_LOCATIONS = "childLocations";
 }

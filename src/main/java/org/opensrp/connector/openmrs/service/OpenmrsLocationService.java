@@ -13,6 +13,7 @@ import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
 import org.opensrp.common.util.HttpUtil;
+import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ import com.squareup.okhttp.Response;
 
 @Service
 public class OpenmrsLocationService extends OpenmrsService {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(OpenmrsLocationService.class);
 	
 	private static final String LOCATION_URL = "ws/rest/v1/location";
@@ -61,7 +62,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	public Location getLocation(String locationIdOrName) throws JSONException {
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
-		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has("uuid"))) {
+		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has(ConnectorConstants.UUID))) {
 			return makeLocation(response);
 		}
 		
@@ -69,12 +70,12 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	public Location getParent(JSONObject locobj) throws JSONException {
-		JSONObject parentL = (locobj.has("parentLocation") && !locobj.isNull("parentLocation"))
-		        ? locobj.getJSONObject("parentLocation")
+		JSONObject parentL = (locobj.has(ConnectorConstants.PARENT_LOCATION) && !locobj.isNull(ConnectorConstants.PARENT_LOCATION))
+		        ? locobj.getJSONObject(ConnectorConstants.PARENT_LOCATION)
 		        : null;
 		
 		if (parentL != null) {
-			return new Location(parentL.getString("uuid"), parentL.getString("display"), null, getParent(parentL));
+			return new Location(parentL.getString(ConnectorConstants.UUID), parentL.getString(ConnectorConstants.DISPLAY), null, getParent(parentL));
 		}
 		return null;
 	}
@@ -83,19 +84,19 @@ public class OpenmrsLocationService extends OpenmrsService {
 		logger.info("makeLocation: " + locationJson);
 		JSONObject obj = new JSONObject(locationJson);
 		Location p = getParent(obj);
-		Location l = new Location(obj.getString("uuid"), obj.getString("name"), null, null, p, null, null);
-		JSONArray t = obj.getJSONArray("tags");
+		Location l = new Location(obj.getString(ConnectorConstants.UUID), obj.getString(ConnectorConstants.NAME), null, null, p, null, null);
+		JSONArray t = obj.getJSONArray(ConnectorConstants.TAGS);
 		
 		for (int i = 0; i < t.length(); i++) {
-			l.addTag(t.getJSONObject(i).getString("display"));
+			l.addTag(t.getJSONObject(i).getString(ConnectorConstants.DISPLAY));
 		}
 		
-		JSONArray a = obj.getJSONArray("attributes");
+		JSONArray a = obj.getJSONArray(ConnectorConstants.ATTRIBUTES);
 		
 		for (int i = 0; i < a.length(); i++) {
-			boolean voided = a.getJSONObject(i).optBoolean("voided");
+			boolean voided = a.getJSONObject(i).optBoolean(ConnectorConstants.VOIDED);
 			if (!voided) {
-				String ad = a.getJSONObject(i).getString("display");
+				String ad = a.getJSONObject(i).getString(ConnectorConstants.DISPLAY);
 				l.addAttribute(ad.substring(0, ad.indexOf(":")), ad.substring(ad.indexOf(":") + 2));
 			}
 		}
@@ -112,7 +113,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		LocationTree ltr = new LocationTree();
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL+ "?v=full");
 		
-		JSONArray res = new JSONObject(response).getJSONArray("results");
+		JSONArray res = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 		if (res.length() == 0) {
 			return ltr;
 		}
@@ -165,13 +166,13 @@ public class OpenmrsLocationService extends OpenmrsService {
 		Location l = makeLocation(response);
 		ltr.addLocation(l);
 		
-		if (lo.has("childLocations")) {
-			JSONArray lch = lo.getJSONArray("childLocations");
+		if (lo.has(ConnectorConstants.CHILD_LOCATIONS)) {
+			JSONArray lch = lo.getJSONArray(ConnectorConstants.CHILD_LOCATIONS);
 			
 			for (int i = 0; i < lch.length(); i++) {
 				
 				JSONObject cj = lch.getJSONObject(i);
-				fillTreeWithHierarchy(ltr, cj.getString("uuid"));
+				fillTreeWithHierarchy(ltr, cj.getString(ConnectorConstants.UUID));
 			}
 		}
 		return l.getLocationId();
@@ -268,8 +269,8 @@ public class OpenmrsLocationService extends OpenmrsService {
 		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
 				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display),attributes)&limit=100&startIndex="+startIndex);
 		logger.info("response received : {} ", response);
-		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has("results")) {
-			JSONArray results = new JSONObject(response).getJSONArray("results");
+		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
+			JSONArray results = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 			for (int i = 0; i < results.length(); i++) {
 				locationList.add(makeLocation(results.getJSONObject(i)));
 			}
