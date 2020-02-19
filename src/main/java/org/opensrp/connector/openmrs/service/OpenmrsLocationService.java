@@ -1,10 +1,9 @@
 package org.opensrp.connector.openmrs.service;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.json.JSONArray;
@@ -14,6 +13,7 @@ import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
 import org.opensrp.common.util.HttpUtil;
+import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import com.squareup.okhttp.Response;
 
 @Service
 public class OpenmrsLocationService extends OpenmrsService {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(OpenmrsLocationService.class);
 	
 	private static final String LOCATION_URL = "ws/rest/v1/location";
@@ -62,7 +62,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	public Location getLocation(String locationIdOrName) throws JSONException {
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
-		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has("uuid"))) {
+		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has(ConnectorConstants.UUID))) {
 			return makeLocation(response);
 		}
 		
@@ -70,12 +70,12 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	public Location getParent(JSONObject locobj) throws JSONException {
-		JSONObject parentL = (locobj.has("parentLocation") && !locobj.isNull("parentLocation"))
-		        ? locobj.getJSONObject("parentLocation")
+		JSONObject parentL = (locobj.has(ConnectorConstants.PARENT_LOCATION) && !locobj.isNull(ConnectorConstants.PARENT_LOCATION))
+		        ? locobj.getJSONObject(ConnectorConstants.PARENT_LOCATION)
 		        : null;
 		
 		if (parentL != null) {
-			return new Location(parentL.getString("uuid"), parentL.getString("display"), null, getParent(parentL));
+			return new Location(parentL.getString(ConnectorConstants.UUID), parentL.getString(ConnectorConstants.DISPLAY), null, getParent(parentL));
 		}
 		return null;
 	}
@@ -84,19 +84,19 @@ public class OpenmrsLocationService extends OpenmrsService {
 		logger.info("makeLocation: " + locationJson);
 		JSONObject obj = new JSONObject(locationJson);
 		Location p = getParent(obj);
-		Location l = new Location(obj.getString("uuid"), obj.getString("name"), null, null, p, null, null);
-		JSONArray t = obj.getJSONArray("tags");
+		Location l = new Location(obj.getString(ConnectorConstants.UUID), obj.getString(ConnectorConstants.NAME), null, null, p, null, null);
+		JSONArray t = obj.getJSONArray(ConnectorConstants.TAGS);
 		
 		for (int i = 0; i < t.length(); i++) {
-			l.addTag(t.getJSONObject(i).getString("display"));
+			l.addTag(t.getJSONObject(i).getString(ConnectorConstants.DISPLAY));
 		}
 		
-		JSONArray a = obj.getJSONArray("attributes");
+		JSONArray a = obj.getJSONArray(ConnectorConstants.ATTRIBUTES);
 		
 		for (int i = 0; i < a.length(); i++) {
-			boolean voided = a.getJSONObject(i).optBoolean("voided");
+			boolean voided = a.getJSONObject(i).optBoolean(ConnectorConstants.VOIDED);
 			if (!voided) {
-				String ad = a.getJSONObject(i).getString("display");
+				String ad = a.getJSONObject(i).getString(ConnectorConstants.DISPLAY);
 				l.addAttribute(ad.substring(0, ad.indexOf(":")), ad.substring(ad.indexOf(":") + 2));
 			}
 		}
@@ -113,7 +113,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		LocationTree ltr = new LocationTree();
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL+ "?v=full");
 		
-		JSONArray res = new JSONObject(response).getJSONArray("results");
+		JSONArray res = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 		if (res.length() == 0) {
 			return ltr;
 		}
@@ -166,13 +166,13 @@ public class OpenmrsLocationService extends OpenmrsService {
 		Location l = makeLocation(response);
 		ltr.addLocation(l);
 		
-		if (lo.has("childLocations")) {
-			JSONArray lch = lo.getJSONArray("childLocations");
+		if (lo.has(ConnectorConstants.CHILD_LOCATIONS)) {
+			JSONArray lch = lo.getJSONArray(ConnectorConstants.CHILD_LOCATIONS);
 			
 			for (int i = 0; i < lch.length(); i++) {
 				
 				JSONObject cj = lch.getJSONObject(i);
-				fillTreeWithHierarchy(ltr, cj.getString("uuid"));
+				fillTreeWithHierarchy(ltr, cj.getString(ConnectorConstants.UUID));
 			}
 		}
 		return l.getLocationId();
@@ -256,4 +256,89 @@ public class OpenmrsLocationService extends OpenmrsService {
 		}
 		
 	};
+
+	public List<Location> getLocationsByLevelAndTags(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
+		List<Location> allLocationsList = new ArrayList<>();
+		allLocationsList = getAllLocations(allLocationsList,0);
+		String locationsJson = new Gson().toJson(allLocationsList);
+		logger.info(locationsJson);
+		return getLocationsByLevelAndTagsFromAllLocationsList(uuid, allLocationsList,locationTopLevel,locationTagsQueried);
+	}
+
+	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
+		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
+				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display),attributes)&limit=100&startIndex="+startIndex);
+		logger.info("response received : {} ", response);
+		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
+			JSONArray results = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
+			for (int i = 0; i < results.length(); i++) {
+				locationList.add(makeLocation(results.getJSONObject(i)));
+			}
+			return getAllLocations(locationList,startIndex+100);
+
+		}
+		return  locationList;
+	}
+
+
+	/**
+	 * This method is used to obtain locations within a hierarchy level by passing the following parameters
+	 * @param uuid a uuid of a location within the hierarchy level, this is used for transversing to the top location level stated below
+	 * @param allLocations this is a list of all locations obtained from OpenMRS
+	 * @param locationTopLevel this defines the top most level that locations to be querried from
+	 *                         e.g
+	 *                         1. for obtaining all locations within a district this value would contain the tag name
+	 *                         district locations
+	 *                         2. for obtaining all locations within a region this value would contain the tag name for
+	 *                         region locations
+	 *
+	 * @param locationTagsQueried this defines the tags of all the locations to be returned
+	 *                            e.g for obtaining all villages this json array would contain the tag name for village locations
+	 *                            for villages and health facilities, this json array would contain both tag names
+	 * @return returns a list of all locations matching the above criteria
+	 */
+	public List<Location> getLocationsByLevelAndTagsFromAllLocationsList(String uuid, List<Location> allLocations, String locationTopLevel, JSONArray locationTagsQueried) {
+		Location location=null;
+		for (Location allLocation : allLocations) {
+			if (allLocation.getLocationId().equals(uuid)) {
+				location = allLocation;
+				break;
+			}
+		}
+
+		if (location==null) {
+			return new ArrayList<>();
+		}
+
+		if (!location.getTags().contains(locationTopLevel)) {
+			return getLocationsByLevelAndTagsFromAllLocationsList(location.getParentLocation().getLocationId(), allLocations,locationTopLevel,locationTagsQueried);
+		}
+
+		if (location.getTags().contains(locationTopLevel)) {
+			return getChildLocationsTreeByTagsAndParentLocationUUID(location.getLocationId(), allLocations,locationTagsQueried);
+		} else {
+			return new ArrayList<>();
+		}
+	}
+
+
+	private List<Location> getChildLocationsTreeByTagsAndParentLocationUUID(String parentUUID, List<Location> allLocations,JSONArray locationTagsQueried) {
+		List<Location> obtainedLocations = new ArrayList<>();
+		for (Location location : allLocations) {
+			for(int i=0;i<locationTagsQueried.length();i++){
+				try {
+					if (location.getParentLocation()!=null && location.getParentLocation().getLocationId().equals(parentUUID) && location.getTags().contains(locationTagsQueried.getString(i))) {
+						obtainedLocations.add(location);
+					}
+				} catch (Exception e) {
+					logger.error(e.getMessage());
+				}
+			}
+
+			if (location.getParentLocation()!=null && location.getParentLocation().getLocationId().equals(parentUUID)) {
+				obtainedLocations.addAll(getChildLocationsTreeByTagsAndParentLocationUUID(location.getLocationId(), allLocations, locationTagsQueried));
+			}
+		}
+		return obtainedLocations;
+	}
 }
