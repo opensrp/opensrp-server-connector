@@ -265,7 +265,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
-		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + "ws/rest/v1/location" +
+		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
 				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display),attributes)&limit=100&startIndex="+startIndex);
 		logger.info("response received : {} ", response);
 		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has("results")) {
