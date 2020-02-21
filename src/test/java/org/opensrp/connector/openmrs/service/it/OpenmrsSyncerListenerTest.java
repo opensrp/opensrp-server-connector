@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.motechproject.scheduler.domain.MotechEvent;
 import org.opensrp.connector.openmrs.schedule.OpenmrsSyncerListener;
 import org.opensrp.connector.openmrs.service.EncounterService;
 import org.opensrp.connector.openmrs.service.OpenmrsUserService;
@@ -45,8 +44,6 @@ public class OpenmrsSyncerListenerTest extends OpenmrsApiService {
 	
 	@Autowired
 	private EncounterService encounterService;
-	
-	MotechEvent event = new MotechEvent("subject");
 	
 	public OpenmrsSyncerListenerTest() throws IOException {
 		super();
