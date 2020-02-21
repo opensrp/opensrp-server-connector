@@ -10,7 +10,7 @@ import org.opensrp.common.util.DateUtil;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.DHIS2Marker;
 import org.opensrp.domain.Event;
-import org.opensrp.repository.AllDHIS2Marker;
+import org.opensrp.repository.couch.AllDHIS2Marker;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
