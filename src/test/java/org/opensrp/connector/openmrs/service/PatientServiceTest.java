@@ -36,13 +36,12 @@ public class PatientServiceTest extends SpringApplicationContextProvider {
     }
 
     @Test
-    public void createPatient() throws Exception {
+    public void testCreatePatientWhenAllIdentifiersAreProvidedShouldReturnCorrectValues() throws Exception {
         PowerMockito.mockStatic(HttpUtil.class);
         PatientService spyPatientService = Mockito.spy(patientService);
         Client client = new Client("Sdf");
         client.addIdentifier(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE, "2323-adsa-23");
         client.addIdentifier("zeir_id", "343-dsfdsf-23");
-        client.addIdentifier(PatientService.OPENSRP_IDENTIFIER_TYPE, "9899898-fsdff-2");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("uuid", "2323");
         Mockito.doReturn(jsonObject).when(spyPatientService).createPerson(client);//getIdentifierTypeUUID
@@ -50,7 +49,34 @@ public class PatientServiceTest extends SpringApplicationContextProvider {
         Mockito.doReturn("https://").when(spyPatientService).getURL();
         Mockito.doReturn("80").when(spyPatientService).getIdentifierTypeUUID(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE);
         Mockito.doReturn("800").when(spyPatientService).getIdentifierTypeUUID(PatientService.OPENSRP_IDENTIFIER_TYPE);
-        String expected = "{\"person\":\"2323\",\"identifiers\":[{\"identifier\":\"343-dsfdsf-23\",\"location\":\"Unknown Location\",\"identifierType\":\"30\"},{\"identifier\":\"9899898-fsdff-2\",\"location\":\"Unknown Location\",\"identifierType\":\"800\"},{\"identifier\":\"2323-adsa-23\",\"location\":\"Unknown Location\",\"identifierType\":\"80\"},{\"identifier\":\"Sdf\",\"location\":\"Unknown Location\",\"identifierType\":\"800\",\"preferred\":true}]}";
+        String expected = "{\"person\":\"2323\"," +
+                "\"identifiers\":[" +
+                "{\"identifier\":\"343-dsfdsf-23\",\"location\":\"Unknown Location\",\"identifierType\":\"30\"}," +
+                "{\"identifier\":\"2323-adsa-23\",\"location\":\"Unknown Location\",\"identifierType\":\"80\"}," +
+                "{\"identifier\":\"Sdf\",\"location\":\"Unknown Location\",\"identifierType\":\"800\",\"preferred\":true}]}";
+        PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected), anyString(), anyString())
+                .thenReturn(new HttpResponse(true, new JSONObject().toString()));
+        Assert.assertNotNull(spyPatientService.createPatient(client));
+    }
+
+    @Test
+    public void testCreatePatientWhenOneOfTheIdentifiersIsNullShouldReturnNonNullIdentifiers() throws Exception {
+        PowerMockito.mockStatic(HttpUtil.class);
+        PatientService spyPatientService = Mockito.spy(patientService);
+        Client client = new Client("Sdf");
+        client.addIdentifier(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE, null);
+        client.addIdentifier("zeir_id", "343-dsfdsf-23");
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("uuid", "2323");
+        Mockito.doReturn(jsonObject).when(spyPatientService).createPerson(client);
+        Mockito.doReturn("30").when(spyPatientService).getIdentifierTypeUUID("zeir_id");
+        Mockito.doReturn("https://").when(spyPatientService).getURL();
+        Mockito.doReturn("80").when(spyPatientService).getIdentifierTypeUUID(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE);
+        Mockito.doReturn("800").when(spyPatientService).getIdentifierTypeUUID(PatientService.OPENSRP_IDENTIFIER_TYPE);
+        String expected = "{\"person\":\"2323\"," +
+                "\"identifiers\":[" +
+                "{\"identifier\":\"343-dsfdsf-23\",\"location\":\"Unknown Location\",\"identifierType\":\"30\"}," +
+                "{\"identifier\":\"Sdf\",\"location\":\"Unknown Location\",\"identifierType\":\"800\",\"preferred\":true}]}";
         PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected), anyString(), anyString())
                 .thenReturn(new HttpResponse(true, new JSONObject().toString()));
         Assert.assertNotNull(spyPatientService.createPatient(client));
