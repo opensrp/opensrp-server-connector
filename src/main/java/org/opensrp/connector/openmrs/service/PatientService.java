@@ -99,7 +99,7 @@ public class PatientService extends OpenmrsService {
 	
 	public static final String OPENSRP_ID_TYPE_KEY = "OpenSRP_ID";
 	
-	@Value ("#{opensrp['registration.events']}")
+	@Value("#{opensrp['registration.events']}")
 	protected String REGESTRTIONEVENTS;
 	
 	public PatientService() {
@@ -107,7 +107,7 @@ public class PatientService extends OpenmrsService {
 	
 	@Autowired
 	public PatientService(ClientService clientService, OpenmrsLocationService openmrsLocationService,
-	                      EventService eventService, ConfigService config, ErrorTraceService errorTraceService) {
+	    EventService eventService, ConfigService config, ErrorTraceService errorTraceService) {
 		this.clientService = clientService;
 		this.openmrsLocationService = openmrsLocationService;
 		this.eventService = eventService;
@@ -120,13 +120,14 @@ public class PatientService extends OpenmrsService {
 	}
 	
 	public String getPatientByIdentifierUUID(String identifier) throws JSONException {
-		JSONObject j = new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL, CUSTOM_UUID_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
+		JSONObject j = new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL,
+		    CUSTOM_UUID_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
 		return getUuidFromJSONObject(j);
 	}
 	
 	public String getPatientByIdentifierPersonUUID(String identifier) throws JSONException {
 		JSONObject j = new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL,
-				CUSTOM_PERSON_UUID_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
+		    CUSTOM_PERSON_UUID_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
 		if (j.has(RESULTS_KEY) && j.get(RESULTS_KEY) instanceof JSONArray) {
 			JSONArray p = j.getJSONArray(RESULTS_KEY);
 			if (p.length() > 0) {
@@ -146,8 +147,8 @@ public class PatientService extends OpenmrsService {
 		// we have to use this ugly approach because identifier not found throws exception and
 		// its hard to find whether it was network error or object not found or server error
 		JSONArray res = new JSONObject(
-				HttpUtil.get(getURL() + "/" + PATIENT_IDENTIFIER_TYPE_URL, "v=full", OPENMRS_USER, OPENMRS_PWD).body())
-				.getJSONArray("results");
+		        HttpUtil.get(getURL() + "/" + PATIENT_IDENTIFIER_TYPE_URL, "v=full", OPENMRS_USER, OPENMRS_PWD).body())
+		                .getJSONArray("results");
 		for (int i = 0; i < res.length(); i++) {
 			if (res.getJSONObject(i).getString("display").equalsIgnoreCase(identifierType)) {
 				return res.getJSONObject(i);
@@ -158,7 +159,7 @@ public class PatientService extends OpenmrsService {
 	
 	public JSONObject getPatientByIdentifierPerson(String identifier) throws JSONException {
 		JSONObject j = new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL,
-				CUSTOM_PERSON_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
+		    CUSTOM_PERSON_PARAM + "&identifier=" + identifier, OPENMRS_USER, OPENMRS_PWD).body());
 		if (j.has(RESULTS_KEY) && j.get(RESULTS_KEY) instanceof JSONArray) {
 			JSONArray p = j.getJSONArray(RESULTS_KEY);
 			if (p.length() > 0) {
@@ -173,13 +174,13 @@ public class PatientService extends OpenmrsService {
 	
 	public JSONObject getPatientByUuid(String uuid, boolean noRepresentationTag) throws JSONException {
 		return new JSONObject(HttpUtil.get(getURL() + "/" + PATIENT_URL + "/" + uuid, noRepresentationTag ? "" : "v=full",
-				OPENMRS_USER, OPENMRS_PWD).body());
+		    OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	public String getIdentifierTypeUUID(String identifierType) throws JSONException {
 		JSONObject resIdentifier = new JSONObject(
-				HttpUtil.get(getURL() + "/" + PATIENT_IDENTIFIER_TYPE_URL + "/" + identifierType, CUSTOM_UUID_PARAM,
-						OPENMRS_USER, OPENMRS_PWD).body());
+		        HttpUtil.get(getURL() + "/" + PATIENT_IDENTIFIER_TYPE_URL + "/" + identifierType, CUSTOM_UUID_PARAM,
+		            OPENMRS_USER, OPENMRS_PWD).body());
 		
 		if (resIdentifier.has(UUID_KEY)) {
 			return resIdentifier.getString(UUID_KEY);
@@ -190,7 +191,7 @@ public class PatientService extends OpenmrsService {
 	public JSONObject createIdentifierType(String name, String description) throws JSONException {
 		JSONObject o = convertIdentifierToOpenmrsJson(name, description);
 		return new JSONObject(HttpUtil
-				.post(getURL() + "/" + PATIENT_IDENTIFIER_TYPE_URL, "", o.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+		        .post(getURL() + "/" + PATIENT_IDENTIFIER_TYPE_URL, "", o.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	private String getUuidFromJSONObject(JSONObject object) {
@@ -205,7 +206,8 @@ public class PatientService extends OpenmrsService {
 				}
 			}
 			return null;
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -214,9 +216,10 @@ public class PatientService extends OpenmrsService {
 	private JSONObject getRelationshipFromOpenMRS(String personUUID) {
 		try {
 			return new JSONObject(
-					HttpUtil.get(getURL() + "/" + PATIENT_RELATIONSHIP_URL + "/" + personUUID, "", OPENMRS_USER, OPENMRS_PWD)
-							.body());
-		} catch (JSONException e) {
+			        HttpUtil.get(getURL() + "/" + PATIENT_RELATIONSHIP_URL + "/" + personUUID, "", OPENMRS_USER, OPENMRS_PWD)
+			                .body());
+		}
+		catch (JSONException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -230,13 +233,13 @@ public class PatientService extends OpenmrsService {
 		String relationShipPersonB;
 		try {
 			res = new JSONObject(HttpUtil
-					.get(getURL() + "/" + PATIENT_RELATIONSHIP_URL, "person=" + personB, OPENMRS_USER, OPENMRS_PWD).body())
-					.getJSONArray("results");
+			        .get(getURL() + "/" + PATIENT_RELATIONSHIP_URL, "person=" + personB, OPENMRS_USER, OPENMRS_PWD).body())
+			                .getJSONArray("results");
 			for (int i = 0; i < res.length(); i++) {
 				if (res.getJSONObject(i).getString("uuid") != null) {
 					relationship = getRelationshipFromOpenMRS(res.getJSONObject(i).getString("uuid"));
 					if (relationship != null && relationship.getString("relationshipType") != null
-							&& relationship.getString("personB") != null && relationship.getString("personA") != null) {
+					        && relationship.getString("personB") != null && relationship.getString("personA") != null) {
 						relationShipUUID = res.getJSONObject(i).getString("uuid");
 						relationShipPersonB = new JSONObject(relationship.getString("personB")).getString("uuid");
 						relationShipPersonA = new JSONObject(relationship.getString("personA")).getString("uuid");
@@ -249,7 +252,8 @@ public class PatientService extends OpenmrsService {
 					}
 				}
 			}
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			logger.error("", e);
 		}
 		return false;
@@ -258,8 +262,9 @@ public class PatientService extends OpenmrsService {
 	public JSONObject voidPatientRelationShip(String relationShipUUID) {
 		try {
 			return new JSONObject(HttpUtil.delete(getURL() + "/" + PATIENT_RELATIONSHIP_URL + "/" + relationShipUUID, "",
-					OPENMRS_USER, OPENMRS_PWD).body());
-		} catch (JSONException e) {
+			    OPENMRS_USER, OPENMRS_PWD).body());
+		}
+		catch (JSONException e) {
 			logger.error("", e);
 			return null;
 		}
@@ -272,8 +277,9 @@ public class PatientService extends OpenmrsService {
 		try {
 			JSONObject o = convertRaletionShipToOpenmrsJson(personB, personA, relationshipType);
 			return new JSONObject(HttpUtil
-					.post(getURL() + "/" + PATIENT_RELATIONSHIP_URL, "", o.toString(), OPENMRS_USER, OPENMRS_PWD).body());
-		} catch (JSONException e) {
+			        .post(getURL() + "/" + PATIENT_RELATIONSHIP_URL, "", o.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+		}
+		catch (JSONException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -287,7 +293,7 @@ public class PatientService extends OpenmrsService {
 	}
 	
 	public JSONObject convertRaletionShipToOpenmrsJson(String personB, String personA, String relationshipType)
-			throws JSONException {
+	        throws JSONException {
 		JSONObject relation = new JSONObject();
 		relation.put("personB", personB);
 		relation.put("personA", personA);
@@ -300,37 +306,38 @@ public class PatientService extends OpenmrsService {
 			for (Client c : cl) {
 				try {
 					if (c.getRelationships() != null && !c.getRelationships().isEmpty()
-							&& c.getRelationships().containsKey("mother") && c.getIdentifier("OPENMRS_UUID") != null) {
+					        && c.getRelationships().containsKey("mother") && c.getIdentifier("OPENMRS_UUID") != null) {
 						String motherBaseId = c.getRelationships().get("mother").get(0);
 						String personUUID = getPatientByIdentifierPersonUUID(motherBaseId);
 						if (personUUID != null) {
 							createPatientRelationShip(c.getIdentifier("OPENMRS_UUID"), personUUID,
-									PARENT_CHILD_RELATIONSHIP);
+							    PARENT_CHILD_RELATIONSHIP);
 						}
 						List<Client> siblings = clientService.findByRelationship(motherBaseId);
 						if (siblings != null && !siblings.isEmpty()) {
 							for (Client client : siblings) {
 								if (motherBaseId.equals(client.getRelationships().get("mother").get(0))
-										&& !c.getBaseEntityId().equals(client.getBaseEntityId())) {
+								        && !c.getBaseEntityId().equals(client.getBaseEntityId())) {
 									String siblingUUID = getPatientByIdentifierPersonUUID(client.getBaseEntityId());
 									if (siblingUUID != null) {
 										createPatientRelationShip(c.getIdentifier("OPENMRS_UUID"), siblingUUID,
-												SIBLING_SIBLING_RELATIONSHIP);
+										    SIBLING_SIBLING_RELATIONSHIP);
 									}
 								}
 							}
 						}
 					}
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					logger.error("", e);
 					errorTraceService.log(errorType, Client.class.getName(), c.getBaseEntityId(),
-							ExceptionUtils.getStackTrace(e), "");
+					    ExceptionUtils.getStackTrace(e), "");
 				}
 			}
 	}
 	
 	public void processClients(List<Client> cl, JSONArray patientsJsonArray,
-	                           OpenmrsConstants.SchedulerConfig schedulerConfig, String errorType) {
+	        OpenmrsConstants.SchedulerConfig schedulerConfig, String errorType) {
 		JSONObject patient = new JSONObject();// only for test code purpose
 		logger.info("Reprocessing_clients " + cl.size());
 		for (Client c : cl) {
@@ -375,10 +382,11 @@ public class PatientService extends OpenmrsService {
 					}
 					config.updateAppStateToken(schedulerConfig, c.getServerVersion());
 				}
-			} catch (Exception ex1) {
+			}
+			catch (Exception ex1) {
 				logger.error("", ex1);
 				errorTraceService.log(errorType, Client.class.getName(), c.getBaseEntityId(),
-						ExceptionUtils.getStackTrace(ex1), "");
+				    ExceptionUtils.getStackTrace(ex1), "");
 			}
 			patientsJsonArray.put(patient);
 		}
@@ -386,7 +394,7 @@ public class PatientService extends OpenmrsService {
 	
 	public String getPersonAttributeTypeUUID(String attributeName) throws JSONException {
 		JSONObject resAttributeType = new JSONObject(HttpUtil.get(getURL() + "/" + PERSON_ATTRIBUTE_TYPE_URL,
-				CUSTOM_UUID_PARAM + "&q=" + attributeName, OPENMRS_USER, OPENMRS_PWD).body());
+		    CUSTOM_UUID_PARAM + "&q=" + attributeName, OPENMRS_USER, OPENMRS_PWD).body());
 		return getUuidFromJSONObject(resAttributeType);
 	}
 	
@@ -416,7 +424,7 @@ public class PatientService extends OpenmrsService {
 		}
 		
 		String fn = be.getFirstName() == null || StringUtils.isEmptyOrWhitespaceOnly(be.getFirstName()) ? "-"
-				: be.getFirstName();
+		        : be.getFirstName();
 		if (!fn.equals("-")) {
 			fn = fn.replaceAll("[^A-Za-z0-9\\s]+", "");
 		}
@@ -442,7 +450,7 @@ public class PatientService extends OpenmrsService {
 				List<Obs> obs = event.getObs();
 				for (Obs obs2 : obs) {
 					if (obs2 != null && obs2.getFieldType().equals("formsubmissionField")
-							&& obs2.getFormSubmissionField().equals("Home_Facility") && obs2.getValue() != null) {
+					        && obs2.getFormSubmissionField().equals("Home_Facility") && obs2.getValue() != null) {
 						address4UUID = obs2.getValue().toString();
 						String clientAddress4 = openmrsLocationService.getLocation(address4UUID).getName();
 						if (be.getAttribute("Home_Facility") != null) {
@@ -457,7 +465,7 @@ public class PatientService extends OpenmrsService {
 		
 		if (!update) {
 			per.put("names", new JSONArray(
-					"[{\"givenName\":\"" + fn + "\",\"middleName\":\"" + mn + "\", \"familyName\":\"" + ln + "\"}]"));
+			        "[{\"givenName\":\"" + fn + "\",\"middleName\":\"" + mn + "\", \"familyName\":\"" + ln + "\"}]"));
 			per.put("addresses", convertAddressesToOpenmrsJson(be, address4UUID));
 		}
 		
@@ -495,9 +503,9 @@ public class PatientService extends OpenmrsService {
 		for (Address ad : adl) {
 			if (ad.getAddressFields() != null) {
 				jao.put("address1", convertToOpenmrsString(
-						ad.getAddressFieldMatchingRegex("(?i)(ADDRESS1|HOUSE_NUMBER|HOUSE|HOUSE_NO|UNIT|UNIT_NUMBER|UNIT_NO)")));
+				    ad.getAddressFieldMatchingRegex("(?i)(ADDRESS1|HOUSE_NUMBER|HOUSE|HOUSE_NO|UNIT|UNIT_NUMBER|UNIT_NO)")));
 				jao.put("address2", convertToOpenmrsString(
-						ad.getAddressFieldMatchingRegex("(?i)(ADDRESS2|STREET|STREET_NUMBER|STREET_NO|LANE)")));
+				    ad.getAddressFieldMatchingRegex("(?i)(ADDRESS2|STREET|STREET_NUMBER|STREET_NO|LANE)")));
 				String address3 = ad.getAddressFieldMatchingRegex("(?i)(ADDRESS3|SECTOR|AREA)");
 				address3 = fetchLocationByUUID(address3);
 				jao.put("address3", convertToOpenmrsString(address3));
@@ -533,30 +541,31 @@ public class PatientService extends OpenmrsService {
 				Map<String, String> locationsHierarchyMap = openmrsLocationService.getLocationsHierarchy(locationTree);
 				
 				jao.put("country",
-						locationsHierarchyMap.containsKey(AllowedLevels.COUNTRY.toString())
-								? locationsHierarchyMap.get(AllowedLevels.COUNTRY.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.COUNTRY.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.COUNTRY.toString())
+				            : "");
 				
 				jao.put("countyDistrict",
-						locationsHierarchyMap.containsKey(AllowedLevels.DISTRICT.toString())
-								? locationsHierarchyMap.get(AllowedLevels.DISTRICT.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.DISTRICT.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.DISTRICT.toString())
+				            : "");
 				
 				jao.put("address2",
-						locationsHierarchyMap.containsKey(AllowedLevels.COUNTY.toString())
-								? locationsHierarchyMap.get(AllowedLevels.COUNTY.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.COUNTY.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.COUNTY.toString())
+				            : "");
 				jao.put("address3",
-						locationsHierarchyMap.containsKey(AllowedLevels.SUB_COUNTY.toString())
-								? locationsHierarchyMap.get(AllowedLevels.SUB_COUNTY.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.SUB_COUNTY.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.SUB_COUNTY.toString())
+				            : "");
 				
 				jao.put("address4",
-						locationsHierarchyMap.containsKey(AllowedLevels.DISTRICT.toString())
-								? locationsHierarchyMap.get(AllowedLevels.HEALTH_FACILITY.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.DISTRICT.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.HEALTH_FACILITY.toString())
+				            : "");
 				
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				logger.error("", e);
 			}
 		} else if (clientAddress4UUID != null) {
@@ -568,19 +577,20 @@ public class PatientService extends OpenmrsService {
 				Map<String, String> locationsHierarchyMap = openmrsLocationService.getLocationsHierarchy(locationTree);
 				
 				jao.put("countyDistrict",
-						locationsHierarchyMap.containsKey(AllowedLevels.DISTRICT.toString())
-								? locationsHierarchyMap.get(AllowedLevels.DISTRICT.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.DISTRICT.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.DISTRICT.toString())
+				            : "");
 				jao.put("stateProvince",
-						locationsHierarchyMap.containsKey(AllowedLevels.PROVINCE.toString())
-								? locationsHierarchyMap.get(AllowedLevels.PROVINCE.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.PROVINCE.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.PROVINCE.toString())
+				            : "");
 				jao.put("country",
-						locationsHierarchyMap.containsKey(AllowedLevels.COUNTRY.toString())
-								? locationsHierarchyMap.get(AllowedLevels.COUNTRY.toString())
-								: "");
+				    locationsHierarchyMap.containsKey(AllowedLevels.COUNTRY.toString())
+				            ? locationsHierarchyMap.get(AllowedLevels.COUNTRY.toString())
+				            : "");
 				
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				logger.error("", e);
 			}
 		}
@@ -592,13 +602,16 @@ public class PatientService extends OpenmrsService {
 	
 	public JSONObject createPatient(Client c) throws JSONException {
 		String personUUIDString = createPerson(c).optString("uuid");
-		if(!StringUtils.isNullOrEmpty(personUUIDString)) {
+		if (!StringUtils.isNullOrEmpty(personUUIDString)) {
 			JSONObject p = new JSONObject();
 			p.put("person", personUUIDString);
 			
 			JSONArray ids = new JSONArray();
 			if (c.getIdentifiers() != null) {
 				for (Entry<String, String> id : c.getIdentifiers().entrySet()) {
+					if (StringUtils.isNullOrEmpty(id.getValue())) {
+						continue;
+					}
 					JSONObject jio = new JSONObject();
 					jio.put("identifierType", fetchIdentifierTypeUUID(id.getKey()));
 					if (id.getKey().equalsIgnoreCase(OPENSRP_ID_TYPE_KEY)) {
@@ -611,7 +624,7 @@ public class PatientService extends OpenmrsService {
 					ids.put(jio);
 				}
 			}
-
+			
 			JSONObject jio = new JSONObject();
 			jio.put("identifierType", fetchIdentifierTypeUUID(OPENSRP_IDENTIFIER_TYPE));
 			jio.put("identifier", c.getBaseEntityId());
@@ -622,17 +635,17 @@ public class PatientService extends OpenmrsService {
 			ids.put(jio);
 			
 			p.put("identifiers", ids);
-			String response = HttpUtil.post(getURL() + "/" + PATIENT_URL, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body();
+			String response = HttpUtil.post(getURL() + "/" + PATIENT_URL, "", p.toString(), OPENMRS_USER, OPENMRS_PWD)
+			        .body();
 			return new JSONObject(response);
-		
-		}
-		else {
+			
+		} else {
 			return null;
 		}
 	}
 	
 	public JSONObject updatePatientIdentifier(String patientUUID, String identifierUUID, String newIdentifier)
-			throws JSONException {
+	        throws JSONException {
 		String url = PATIENT_URL + "/" + patientUUID + "/identifier/" + identifierUUID;
 		JSONObject p = new JSONObject();
 		p.put(ConnectorConstants.IDENTIFIER, newIdentifier);
@@ -652,7 +665,7 @@ public class PatientService extends OpenmrsService {
 		addPersonAttributes(c, p, ids);
 		updatePersonName(getPatientByUuid(uuid, false).getJSONObject(PERSON_KEY), c);
 		return new JSONObject(HttpUtil
-				.post(getURL() + "/" + PATIENT_URL + "/" + uuid, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+		        .post(getURL() + "/" + PATIENT_URL + "/" + uuid, "", p.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 		
 	}
 	
@@ -675,8 +688,8 @@ public class PatientService extends OpenmrsService {
 		jio.put("location", "Unknown Location");
 		jio.put("preferred", true);
 		return new JSONObject(
-				HttpUtil.post(getURL() + "/" + PATIENT_URL + "/" + patient.getString("uuid") + "/" + PATIENT_IDENTIFIER_URL,
-						"", jio.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+		        HttpUtil.post(getURL() + "/" + PATIENT_URL + "/" + patient.getString("uuid") + "/" + PATIENT_IDENTIFIER_URL,
+		            "", jio.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 	}
 	
 	public Client convertToClient(JSONObject patient) throws JSONException {
@@ -687,7 +700,8 @@ public class PatientService extends OpenmrsService {
 			if (ji.getJSONObject("identifierType").getString("display").equalsIgnoreCase(OPENSRP_IDENTIFIER_TYPE)) {
 				c.setBaseEntityId(ji.getString(ConnectorConstants.IDENTIFIER));
 			} else {
-				c.addIdentifier(ji.getJSONObject("identifierType").getString("display"), ji.getString(ConnectorConstants.IDENTIFIER));
+				c.addIdentifier(ji.getJSONObject("identifierType").getString("display"),
+				    ji.getString(ConnectorConstants.IDENTIFIER));
 			}
 		}
 		
@@ -696,15 +710,15 @@ public class PatientService extends OpenmrsService {
 		JSONObject pr = patient.getJSONObject("person");
 		
 		String mn = pr.getJSONObject("preferredName").has("middleName")
-				? pr.getJSONObject("preferredName").getString("middleName")
-				: null;
+		        ? pr.getJSONObject("preferredName").getString("middleName")
+		        : null;
 		DateTime dd = pr.has("deathDate") && !pr.getString("deathDate").equalsIgnoreCase("null")
-				? new DateTime(pr.getString("deathDate"))
-				: null;
+		        ? new DateTime(pr.getString("deathDate"))
+		        : null;
 		c.withFirstName(pr.getJSONObject("preferredName").getString("givenName")).withMiddleName(mn)
-				.withLastName(pr.getJSONObject("preferredName").getString("familyName")).withGender(pr.getString("gender"))
-				.withBirthdate(new DateTime(pr.getString("birthdate")), pr.getBoolean("birthdateEstimated"))
-				.withDeathdate(dd, false);
+		        .withLastName(pr.getJSONObject("preferredName").getString("familyName")).withGender(pr.getString("gender"))
+		        .withBirthdate(new DateTime(pr.getString("birthdate")), pr.getBoolean("birthdateEstimated"))
+		        .withDeathdate(dd, false);
 		
 		if (pr.has("attributes")) {
 			for (int i = 0; i < pr.getJSONArray("attributes").length(); i++) {
@@ -713,7 +727,7 @@ public class PatientService extends OpenmrsService {
 					c.addAttribute(at.getJSONObject("attributeType").getString("display"), at.getString("value"));
 				} else {
 					c.addAttribute(at.getJSONObject("attributeType").getString("display"),
-							at.getJSONObject("value").getString("display"));
+					    at.getJSONObject("value").getString("display"));
 				}
 			}
 		}
@@ -722,14 +736,14 @@ public class PatientService extends OpenmrsService {
 			for (int i = 0; i < pr.getJSONArray("addresses").length(); i++) {
 				JSONObject ad = pr.getJSONArray("addresses").getJSONObject(i);
 				DateTime startDate = ad.has("startDate") && !ad.getString("startDate").equalsIgnoreCase("null")
-						? new DateTime(ad.getString("startDate"))
-						: null;
+				        ? new DateTime(ad.getString("startDate"))
+				        : null;
 				DateTime endDate = ad.has("startDate") && !ad.getString("endDate").equalsIgnoreCase("null")
-						? new DateTime(ad.getString("endDate"))
-						: null;
+				        ? new DateTime(ad.getString("endDate"))
+				        : null;
 				Address a = new Address(ad.getString("address6"), startDate, endDate, null, ad.getString("latitude"),
-						ad.getString("longitude"), ad.getString("postalCode"), ad.getString("stateProvince"),
-						ad.getString("country"));
+				        ad.getString("longitude"), ad.getString("postalCode"), ad.getString("stateProvince"),
+				        ad.getString("country"));
 				//a.setGeopoint(geopoint);
 				a.setSubTown(ad.getString("address2"));
 				a.setTown(ad.getString("address3"));
@@ -758,7 +772,8 @@ public class PatientService extends OpenmrsService {
 			for (String line : response) {
 				System.out.println(line);
 			}
-		} catch (IOException ex) {
+		}
+		catch (IOException ex) {
 			logger.error("", ex);
 		}
 		return response;
@@ -772,7 +787,7 @@ public class PatientService extends OpenmrsService {
 		
 		if (ol == null || ol.isEmpty()) {
 			throw new IllegalArgumentException(
-					"Death Encounter does not have any observations for the required causeOfDeath ");
+			        "Death Encounter does not have any observations for the required causeOfDeath ");
 		}
 		for (Obs obs : ol) {
 			if (obs.getFormSubmissionField().equals("Cause_Death") && obs.getValue() != null) {
@@ -789,11 +804,11 @@ public class PatientService extends OpenmrsService {
 		requestBody.put("causeOfDeath", OTHER_NON_CODED_CONCEPT);
 		
 		HttpResponse op = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + PERSON_URL + "/" + patientUUID,
-				"", requestBody.toString(), OPENMRS_USER, OPENMRS_PWD);
+		    "", requestBody.toString(), OPENMRS_USER, OPENMRS_PWD);
 		
 		if (new JSONObject(op.body()).has("uuid")) {
 			HttpResponse obsResponse = HttpUtil.post(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + OBS_URL, "",
-					obsBody.toString(), OPENMRS_USER, OPENMRS_PWD);
+			    obsBody.toString(), OPENMRS_USER, OPENMRS_PWD);
 			return new JSONObject(obsResponse.body());
 		}
 		return null;
@@ -825,7 +840,7 @@ public class PatientService extends OpenmrsService {
 		String url = PERSON_URL + "/" + patientObject.getString("uuid") + "/name/" + nameObject.getString("uuid");
 		
 		return new JSONObject(
-				HttpUtil.post(getURL() + "/" + url, "", requestBody.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+		        HttpUtil.post(getURL() + "/" + url, "", requestBody.toString(), OPENMRS_USER, OPENMRS_PWD).body());
 		
 	}
 	
@@ -834,7 +849,7 @@ public class PatientService extends OpenmrsService {
 		List<Obs> obs = addressUpdateEvent.getObs();
 		for (Obs obs2 : obs) {
 			if (obs2 != null && obs2.getFieldType().equals("formsubmissionField")
-					&& obs2.getFormSubmissionField().equals("Home_Facility") && obs2.getValue() != null) {
+			        && obs2.getFormSubmissionField().equals("Home_Facility") && obs2.getValue() != null) {
 				clientAddress4 = fetchLocationByUUID(obs2.getValue().toString());
 				break;
 			}
@@ -872,8 +887,9 @@ public class PatientService extends OpenmrsService {
 			JSONObject updateAddress = convertAddressesToOpenmrsJson(client, clientAddress4).getJSONObject(0);
 			String url = PERSON_URL + "/" + patientObject.getString("uuid") + "/address/" + addressObject.getString("uuid");
 			return new JSONObject(
-					HttpUtil.post(getURL() + "/" + url, "", updateAddress.toString(), OPENMRS_USER, OPENMRS_PWD).body());
-		} catch (JSONException e) {
+			        HttpUtil.post(getURL() + "/" + url, "", updateAddress.toString(), OPENMRS_USER, OPENMRS_PWD).body());
+		}
+		catch (JSONException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -928,7 +944,7 @@ public class PatientService extends OpenmrsService {
 	public String fetchLocationByUUID(String locationUUID) {
 		try {
 			if (locationUUID == null || StringUtils.isEmptyOrWhitespaceOnly(locationUUID)
-					|| locationUUID.equalsIgnoreCase("Other")) {
+			        || locationUUID.equalsIgnoreCase("Other")) {
 				return locationUUID;
 			}
 			Location location = openmrsLocationService.getLocation(locationUUID);
@@ -937,7 +953,8 @@ public class PatientService extends OpenmrsService {
 			} else {
 				return location.getName();
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			logger.error("", e);
 			return "Unknown Location Id: " + locationUUID;
 		}
@@ -977,7 +994,8 @@ public class PatientService extends OpenmrsService {
 		try {
 			UUID.fromString(string);
 			return true;
-		} catch (IllegalArgumentException ex) {
+		}
+		catch (IllegalArgumentException ex) {
 			return false;
 		}
 	}
