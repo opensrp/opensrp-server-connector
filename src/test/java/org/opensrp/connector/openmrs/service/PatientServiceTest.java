@@ -1,6 +1,7 @@
 package org.opensrp.connector.openmrs.service;
 
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.internal.WhiteboxImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.mockito.Matchers.anyString;
@@ -80,5 +82,18 @@ public class PatientServiceTest extends SpringApplicationContextProvider {
         PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected), anyString(), anyString())
                 .thenReturn(new HttpResponse(true, new JSONObject().toString()));
         Assert.assertNotNull(spyPatientService.createPatient(client));
+    }
+
+    @Test
+    public void testAddPersonAttributeShouldFillJsonObjectCorrectly() throws Exception {
+        PowerMockito.mockStatic(HttpUtil.class);
+        Client client = new Client("Sdf");
+        PatientService spyPatientService = Mockito.spy(patientService);
+        Mockito.doReturn("800").when(spyPatientService).getIdentifierTypeUUID(PatientService.OPENSRP_IDENTIFIER_TYPE);
+        JSONObject jsonObject = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        WhiteboxImpl.invokeMethod(spyPatientService, "addPersonAttributes", client, jsonObject, jsonArray);
+        Assert.assertEquals(1, jsonObject.length());
+        Assert.assertTrue(jsonObject.has("identifiers"));
     }
 }
