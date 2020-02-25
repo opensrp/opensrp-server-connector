@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
 import org.opensrp.domain.Obs;
-import org.opensrp.repository.AllDHIS2Marker;
+import org.opensrp.repository.couch.AllDHIS2Marker;
 import org.opensrp.service.ClientService;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
