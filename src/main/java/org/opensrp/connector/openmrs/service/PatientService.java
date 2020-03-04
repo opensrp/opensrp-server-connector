@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -37,8 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
-import com.mysql.jdbc.StringUtils;
 
 @Service
 public class PatientService extends OpenmrsService {
@@ -369,7 +368,7 @@ public class PatientService extends OpenmrsService {
 				} else {
 					JSONObject patientJson = createPatient(c);
 					patient = patientJson;//only for test code purpose
-					if (patientJson != null && !StringUtils.isNullOrEmpty(patientJson.optString("uuid"))) {
+					if (patientJson != null && !StringUtils.isEmpty(patientJson.optString("uuid"))) {
 						c.addIdentifier(PatientService.OPENMRS_UUID_IDENTIFIER_TYPE, patientJson.getString("uuid"));
 						clientService.addorUpdate(c, false);
 					}
@@ -415,7 +414,7 @@ public class PatientService extends OpenmrsService {
 			per.put("deathDate", OPENMRS_DATE.format(be.getDeathdate().toDate()));
 		}
 		
-		String fn = be.getFirstName() == null || StringUtils.isEmptyOrWhitespaceOnly(be.getFirstName()) ? "-"
+		String fn = be.getFirstName() == null || StringUtils.isBlank(be.getFirstName()) ? "-"
 				: be.getFirstName();
 		if (!fn.equals("-")) {
 			fn = fn.replaceAll("[^A-Za-z0-9\\s]+", "");
@@ -592,7 +591,7 @@ public class PatientService extends OpenmrsService {
 	
 	public JSONObject createPatient(Client c) throws JSONException {
 		String personUUIDString = createPerson(c).optString("uuid");
-		if(!StringUtils.isNullOrEmpty(personUUIDString)) {
+		if(!StringUtils.isEmpty(personUUIDString)) {
 			JSONObject p = new JSONObject();
 			p.put("person", personUUIDString);
 			
@@ -927,7 +926,7 @@ public class PatientService extends OpenmrsService {
 	
 	public String fetchLocationByUUID(String locationUUID) {
 		try {
-			if (locationUUID == null || StringUtils.isEmptyOrWhitespaceOnly(locationUUID)
+			if (locationUUID == null || StringUtils.isBlank(locationUUID)
 					|| locationUUID.equalsIgnoreCase("Other")) {
 				return locationUUID;
 			}
@@ -954,7 +953,7 @@ public class PatientService extends OpenmrsService {
 	
 	private String cleanIdentifierWithCheckDigit(String rawId) {
 		
-		if (StringUtils.isNullOrEmpty(rawId)) {
+		if (StringUtils.isEmpty(rawId)) {
 			return rawId;
 		}
 		

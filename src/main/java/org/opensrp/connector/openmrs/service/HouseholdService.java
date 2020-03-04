@@ -1,5 +1,6 @@
 package org.opensrp.connector.openmrs.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,8 +9,6 @@ import org.opensrp.connector.openmrs.constants.OpenmrsHouseHold;
 import org.opensrp.connector.openmrs.constants.OpenmrsHouseHold.HouseholdMember;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.mysql.jdbc.StringUtils;
 
 @Service
 public class HouseholdService extends OpenmrsService {
@@ -93,7 +92,7 @@ public class HouseholdService extends OpenmrsService {
 		JSONArray relationships = new JSONArray();
 		encounters.put(hhe);
 		for (HouseholdMember m : household.getMembers()) {
-			if (StringUtils.isEmptyOrWhitespaceOnly(m.getClient().getFirstName())
+			if (StringUtils.isBlank(m.getClient().getFirstName())
 			        && m.getClient().getIdentifiers().size() < 2) {//we need to ignore uuid of entity
 				//skip Data push for now
 			} else {
