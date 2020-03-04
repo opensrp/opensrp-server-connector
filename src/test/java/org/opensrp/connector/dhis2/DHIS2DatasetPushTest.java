@@ -1,12 +1,10 @@
 package org.opensrp.connector.dhis2;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,8 +15,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.opensrp.api.domain.Location;
 import org.opensrp.connector.openmrs.service.OpenmrsLocationService;
 import org.opensrp.connector.openmrs.service.TestResourceLoader;
@@ -28,6 +29,9 @@ import org.opensrp.service.ConfigService;
 import org.opensrp.service.ReportService;
 
 public class DHIS2DatasetPushTest extends TestResourceLoader {
+	
+	@Rule
+	public MockitoRule rule = MockitoJUnit.rule();
 	
 	@Mock
 	DHIS2DatasetPush mockDatasetPush;
@@ -48,9 +52,9 @@ public class DHIS2DatasetPushTest extends TestResourceLoader {
 	
 	String hia2ReportId = "XQDrq0oQEyN";
 	
-	public DHIS2DatasetPushTest() throws IOException {
+
+	public DHIS2DatasetPushTest() throws  IOException {
 		super();
-		initMocks(this);
 	}
 	
 	@Before
@@ -180,8 +184,8 @@ public class DHIS2DatasetPushTest extends TestResourceLoader {
 		
 		// Customized mock api responses setup
 		when(dhis2HttpUtils.post(anyString(), anyString(), anyString())).thenReturn(apiResponse);
-		when(mockReportService.findByServerVersion(anyInt())).thenReturn(reports);
-		
+		when(mockReportService.findByServerVersion(0)).thenReturn(reports);
+			
 		dhis2DatasetPush.dhis2HttpUtils = dhis2HttpUtils;
 		dhis2DatasetPush.openmrsLocationService = this.mockOpenmrsLocationService;
 		dhis2DatasetPush.config = mockConfig;

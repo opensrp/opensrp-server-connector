@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,8 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.mysql.jdbc.StringUtils;
 
 @Service
 public class EncounterService extends OpenmrsService {
@@ -141,7 +140,7 @@ public class EncounterService extends OpenmrsService {
 			
 			if (observationLists != null)
 				for (Obs obs : observationLists) {
-					if (!StringUtils.isEmptyOrWhitespaceOnly(obs.getFieldCode())
+					if (!StringUtils.isBlank(obs.getFieldCode())
 							&& (obs.getFieldType() == null || obs.getFieldType().equalsIgnoreCase(ConnectorConstants.CONCEPT))) {
 						//						skipping empty obs and fields that don't have concepts if no parent simply make it root obs
 						if (ConnectorConstants.CONCEPT.equals(obs.getFieldType())) {
@@ -243,7 +242,7 @@ public class EncounterService extends OpenmrsService {
 		
 		if (obsList != null)
 			for (Obs obs : obsList) {
-				if (!StringUtils.isEmptyOrWhitespaceOnly(obs.getFieldCode())
+				if (!StringUtils.isBlank(obs.getFieldCode())
 						&& (obs.getFieldType() == null || obs.getFieldType().equalsIgnoreCase(ConnectorConstants.CONCEPT))) {
 					//skipping empty obs if no parent simply make it root obs
 					if (obs.getFieldType().equals(ConnectorConstants.CONCEPT) && obs.getFormSubmissionField().equals(ConnectorConstants.BIRTH_FACILITY_NAME)
@@ -286,7 +285,7 @@ public class EncounterService extends OpenmrsService {
 	
 	private void generateObs(Map<String, JSONArray> parent, Map<String, JSONArray> parentChild, Obs obs, List<Obs> obsList) {
 		try {
-			if (StringUtils.isEmptyOrWhitespaceOnly(obs.getParentCode())) {
+			if (StringUtils.isBlank(obs.getParentCode())) {
 				parent.put(obs.getFieldCode(), convertObsToJson(obs));
 			} else {
 				//find parent obs if not found search and fill or create one
@@ -311,7 +310,7 @@ public class EncounterService extends OpenmrsService {
 	}
 	
 	public JSONObject updateEncounter(Event event) throws JSONException {
-		if (StringUtils.isEmptyOrWhitespaceOnly(event.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE))) {
+		if (StringUtils.isBlank(event.getIdentifier(OPENMRS_UUID_IDENTIFIER_TYPE))) {
 			throw new IllegalArgumentException("Encounter was never pushed to OpenMRS as " + OPENMRS_UUID_IDENTIFIER_TYPE
 					+ " is empty. Consider creating a new one");
 		}

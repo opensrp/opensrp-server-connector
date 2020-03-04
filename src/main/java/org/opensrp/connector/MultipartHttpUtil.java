@@ -9,13 +9,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opensrp.common.util.HttpResponse;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
-import com.mysql.jdbc.StringUtils;
 
 /**
  * The class is a gateway to connect to external system via http for reading and writing data. All
@@ -51,7 +50,7 @@ public class MultipartHttpUtil {
 			if (writer != null)
 				writer.close();
 			
-			return new HttpResponse(con.getResponseCode() == HttpStatus.SC_OK, IOUtils.toString(con.getInputStream()));
+			return new HttpResponse(con.getResponseCode() == HttpStatus.OK.value(), IOUtils.toString(con.getInputStream()));
 			
 		}
 		catch (Exception e) {
@@ -71,7 +70,7 @@ public class MultipartHttpUtil {
 	public static HttpResponse get(String url, String payload, String username, String password) {
 		try {
 			HttpURLConnection con = makeConnection(url, payload, HttpMethod.GET, true, username, password);
-			return new HttpResponse(con.getResponseCode() == HttpStatus.SC_OK, IOUtils.toString(con.getInputStream()));
+			return new HttpResponse(con.getResponseCode() == HttpStatus.OK.value(), IOUtils.toString(con.getInputStream()));
 		}
 		catch (FileNotFoundException e) {
 			return new HttpResponse(true, "");
@@ -91,7 +90,7 @@ public class MultipartHttpUtil {
 		if (url.endsWith("/")) {
 			url = url.substring(0, url.lastIndexOf("/"));
 		}
-		url = (url + (StringUtils.isEmptyOrWhitespaceOnly(payload) ? "" : ("?" + payload))).replaceAll(" ", "%20");
+		url = (url + (StringUtils.isBlank(payload) ? "" : ("?" + payload))).replaceAll(" ", "%20");
 		URL urlo = new URL(url);
 		HttpURLConnection conn = (HttpURLConnection) urlo.openConnection();
 		conn.setRequestProperty("Accept-Charset", charset);

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.mysql.jdbc.StringUtils;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Credentials;
 import com.squareup.okhttp.OkHttpClient;
@@ -48,7 +48,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		try {
 			response = call.execute();
 			String responseBody=response.body().string();
-			if (!StringUtils.isEmptyOrWhitespaceOnly(responseBody)) {
+			if (!StringUtils.isBlank(responseBody)) {
 				return responseBody;
 			}
 		}
@@ -62,7 +62,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	public Location getLocation(String locationIdOrName) throws JSONException {
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
-		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has("uuid"))) {
+		if (!StringUtils.isBlank(response) && (new JSONObject(response).has("uuid"))) {
 			return makeLocation(response);
 		}
 		
