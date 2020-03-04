@@ -9,8 +9,8 @@ import org.ektorp.support.View;
 import org.ict4h.atomfeed.client.domain.FailedEvent;
 import org.ict4h.atomfeed.client.domain.FailedEventRetryLog;
 import org.ict4h.atomfeed.client.repository.AllFailedEvents;
-import org.motechproject.dao.MotechBaseRepository;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
+import org.opensrp.repository.couch.BaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +91,7 @@ public class AllFailedEventsCouchImpl implements AllFailedEvents {
 		
 	}
 	
-	public class AllFailedEventInnerRepository extends MotechBaseRepository<org.opensrp.connector.atomfeed.domain.FailedEvent> {
+	public class AllFailedEventInnerRepository extends BaseRepository<org.opensrp.connector.atomfeed.domain.FailedEvent> {
 		
 		AllFailedEventInnerRepository(CouchDbConnector db) {
 			super(org.opensrp.connector.atomfeed.domain.FailedEvent.class, db);

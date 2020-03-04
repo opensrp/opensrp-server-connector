@@ -9,16 +9,16 @@ import org.ektorp.CouchDbConnector;
 import org.ektorp.support.GenerateView;
 import org.ektorp.support.View;
 import org.ict4h.atomfeed.client.repository.AllMarkers;
-import org.motechproject.dao.MotechBaseRepository;
 import org.opensrp.connector.atomfeed.domain.Marker;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
+import org.opensrp.repository.couch.BaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class AllMarkersCouchImpl extends MotechBaseRepository<Marker> implements AllMarkers {
+public class AllMarkersCouchImpl extends BaseRepository<Marker> implements AllMarkers {
 	
 	private CouchDbConnector db;
 	

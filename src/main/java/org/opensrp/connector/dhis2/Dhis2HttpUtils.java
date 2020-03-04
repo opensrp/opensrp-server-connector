@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +16,7 @@ import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.opensrp.common.util.HttpUtil.AuthType;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -62,7 +62,7 @@ public class Dhis2HttpUtils extends DHIS2Service {
 			while ((output = br.readLine()) != null) {
 				sb.append(output);
 			}
-			return new HttpResponse(con.getResponseCode() == HttpStatus.SC_OK, sb.toString());
+			return new HttpResponse(con.getResponseCode() == HttpStatus.OK.value(), sb.toString());
 		}
 		catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException(e);

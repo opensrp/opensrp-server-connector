@@ -19,6 +19,7 @@
         <nexus-staging-maven-plugin.version>1.5.1</nexus-staging-maven-plugin.version>
 		<spring.version>5.2.3.RELEASE</spring.version>
         <opensrp.api.version>1.0.1</opensrp.api.version>
+        <opensrp.common.version>2.0.0-alpha2-SNAPSHOT</opensrp.common.version>
         <opensrp.core.version>2.0.0-alpha3-SNAPSHOT</opensrp.core.version>
 
     </properties>
@@ -92,6 +93,11 @@
             <groupId>org.smartregister</groupId>
             <artifactId>opensrp-server-core</artifactId>
             <version>${opensrp.core.version}</version>
+        </dependency>
+          <dependency>
+            <groupId>org.smartregister</groupId>
+            <artifactId>opensrp-server-common</artifactId>
+            <version>${opensrp.common.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
