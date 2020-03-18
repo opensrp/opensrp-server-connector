@@ -1,5 +1,7 @@
 package org.opensrp.connector.openmrs.service;
 
+import static org.mockito.ArgumentMatchers.anyString;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -18,8 +20,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.internal.WhiteboxImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.mockito.Matchers.anyString;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(HttpUtil.class)
@@ -53,7 +53,7 @@ public class PatientServiceTest extends SpringApplicationContextProvider {
 		        + "{\"identifier\":\"343-dsfdsf-23\",\"location\":\"Unknown Location\",\"identifierType\":\"30\"},"
 		        + "{\"identifier\":\"2323-adsa-23\",\"location\":\"Unknown Location\",\"identifierType\":\"80\"},"
 		        + "{\"identifier\":\"Sdf\",\"location\":\"Unknown Location\",\"identifierType\":\"800\",\"preferred\":true}]}";
-		PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected), anyString(), anyString())
+		PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected),Mockito.isNull(), Mockito.isNull())
 		        .thenReturn(new HttpResponse(true, new JSONObject().toString()));
 		Assert.assertNotNull(spyPatientService.createPatient(client));
 	}
@@ -75,7 +75,7 @@ public class PatientServiceTest extends SpringApplicationContextProvider {
 		String expected = "{\"person\":\"2323\"," + "\"identifiers\":["
 		        + "{\"identifier\":\"343-dsfdsf-23\",\"location\":\"Unknown Location\",\"identifierType\":\"30\"},"
 		        + "{\"identifier\":\"Sdf\",\"location\":\"Unknown Location\",\"identifierType\":\"800\",\"preferred\":true}]}";
-		PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected), anyString(), anyString())
+		PowerMockito.when(HttpUtil.class, "post", anyString(), anyString(), Mockito.eq(expected), Mockito.isNull(), Mockito.isNull())
 		        .thenReturn(new HttpResponse(true, new JSONObject().toString()));
 		Assert.assertNotNull(spyPatientService.createPatient(client));
 	}
