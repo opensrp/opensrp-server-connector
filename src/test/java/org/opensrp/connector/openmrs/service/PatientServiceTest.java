@@ -23,7 +23,7 @@ import static org.mockito.Matchers.anyString;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(HttpUtil.class)
-@PowerMockIgnore("jdk.internal.reflect.*")
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class PatientServiceTest extends SpringApplicationContextProvider {
 	
 	@Autowired
