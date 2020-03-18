@@ -31,7 +31,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith (PowerMockRunner.class)
 @PrepareForTest ({HttpUtil.class})
-@PowerMockIgnore ({"org.apache.http.conn.ssl.*", "javax.net.ssl.*"})
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class EncounterServiceTest extends TestResourceLoader {
 	private EncounterService encounterService1;
 	private HouseholdService householdService;

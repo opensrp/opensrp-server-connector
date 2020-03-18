@@ -6,9 +6,7 @@
 
     <artifactId>opensrp-server-connector</artifactId>
     <packaging>jar</packaging>
-
-    <version>2.0.0-alpha2-SNAPSHOT</version>
-
+    <version>2.0.0-alpha3-SNAPSHOT</version>
     <name>opensrp-server-connector</name>
     <description>OpenSRP Server Connector module</description>
     <url>http://github.com/OpenSRP/opensrp-server-connector</url>
@@ -180,10 +178,6 @@
         <finalName>opensrp-server-connector</finalName>
         <resources>
             <resource>
-                <directory>configs/assets/schedules</directory>
-                <targetPath>schedules</targetPath>
-            </resource>
-            <resource>
                 <directory>configs/assets/config</directory>
             </resource>
             <resource>
@@ -193,23 +187,15 @@
                     <include>maven.properties</include>
                 </includes>
             </resource>
-            <resource>
-                <directory>configs/modules/core/ziggy</directory>
-                <targetPath>ziggy</targetPath>
-            </resource>
-            <resource>
-                <directory>configs/modules/core/queries</directory>
-                <targetPath>queries</targetPath>
-            </resource>
         </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>11</source>
+                    <target>11</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -243,7 +229,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.0</version>
                 <configuration>
                     <excludes>
                         <exclude>**/*.properties</exclude>
@@ -253,7 +239,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20</version>
+                <version>2.22.2</version>
                 <configuration>
                     <printSummary>true</printSummary>
                     <excludes>
@@ -284,7 +270,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.5</version>
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
@@ -308,7 +294,14 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
+                <dependencies>
+					<dependency>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
+						<version>2.3.1</version>
+					</dependency>
+				</dependencies>
             </plugin>
         </plugins>
     </build>
