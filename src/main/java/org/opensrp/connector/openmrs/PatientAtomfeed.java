@@ -35,8 +35,10 @@ import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+@Profile("atomfeed")
 @Service
 public class PatientAtomfeed extends OpenmrsService implements EventWorker, AtomfeedService {
 	

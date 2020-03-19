@@ -9,8 +9,10 @@ import org.opensrp.common.AllConstants.DHIS2Constants;
 import org.opensrp.connector.domain.DHIS2Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+@Profile("dhis2-sync")
 @Repository
 public class AllDHIS2Marker extends BaseRepository<DHIS2Marker> {
 	
