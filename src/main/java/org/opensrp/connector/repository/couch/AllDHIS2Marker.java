@@ -6,7 +6,7 @@ import org.ektorp.CouchDbConnector;
 import org.ektorp.support.GenerateView;
 import org.opensrp.common.AllConstants;
 import org.opensrp.common.AllConstants.DHIS2Constants;
-import org.opensrp.domain.DHIS2Marker;
+import org.opensrp.connector.domain.DHIS2Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;

@@ -6,7 +6,7 @@ import org.ektorp.CouchDbConnector;
 import org.ektorp.support.View;
 import org.joda.time.DateTime;
 import org.opensrp.common.AllConstants;
-import org.opensrp.domain.Camp;
+import org.opensrp.connector.domain.Camp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
