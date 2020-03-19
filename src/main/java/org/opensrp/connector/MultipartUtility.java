@@ -14,8 +14,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpMethod;
-
 /**
  * This utility class provides an abstraction layer for sending multipart HTTP POST requests to a
  * web server.
