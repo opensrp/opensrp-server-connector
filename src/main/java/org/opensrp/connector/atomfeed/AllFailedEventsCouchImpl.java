@@ -10,7 +10,7 @@ import org.ict4h.atomfeed.client.domain.FailedEvent;
 import org.ict4h.atomfeed.client.domain.FailedEventRetryLog;
 import org.ict4h.atomfeed.client.repository.AllFailedEvents;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
-import org.opensrp.repository.couch.BaseRepository;
+import org.opensrp.connector.repository.couch.BaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
