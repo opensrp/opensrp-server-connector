@@ -19,7 +19,7 @@ import org.opensrp.connector.dhis2.Dhis2HttpUtils;
 import org.opensrp.connector.openmrs.service.TestResourceLoader;
 import org.opensrp.domain.Event;
 import org.opensrp.domain.Obs;
-import org.opensrp.repository.couch.AllEvents;
+import org.opensrp.repository.postgres.EventsRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -32,7 +32,7 @@ public class DHIS2AggregateConnectorTest extends TestResourceLoader {
 	private DHIS2AggregateConnector dhis2AggregateConnector;
 	
 	@Autowired
-	private AllEvents allEvents;
+	private EventsRepositoryImpl allEvents;
 	
 	@Autowired
 	private DHIS2AggregateConnector dHIS2AggregateConnector;

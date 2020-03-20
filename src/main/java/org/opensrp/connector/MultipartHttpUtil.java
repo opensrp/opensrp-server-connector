@@ -11,9 +11,8 @@ import java.net.URL;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.opensrp.common.util.HttpResponse;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -50,7 +49,7 @@ public class MultipartHttpUtil {
 			if (writer != null)
 				writer.close();
 			
-			return new HttpResponse(con.getResponseCode() == HttpStatus.OK.value(), IOUtils.toString(con.getInputStream()));
+			return new HttpResponse(con.getResponseCode() == HttpStatus.SC_OK, IOUtils.toString(con.getInputStream()));
 			
 		}
 		catch (Exception e) {
@@ -70,7 +69,7 @@ public class MultipartHttpUtil {
 	public static HttpResponse get(String url, String payload, String username, String password) {
 		try {
 			HttpURLConnection con = makeConnection(url, payload, HttpMethod.GET, true, username, password);
-			return new HttpResponse(con.getResponseCode() == HttpStatus.OK.value(), IOUtils.toString(con.getInputStream()));
+			return new HttpResponse(con.getResponseCode() == HttpStatus.SC_OK, IOUtils.toString(con.getInputStream()));
 		}
 		catch (FileNotFoundException e) {
 			return new HttpResponse(true, "");
