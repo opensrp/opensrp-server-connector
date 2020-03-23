@@ -423,7 +423,7 @@ public class PatientService extends OpenmrsService {
 		}
 		
 		String fn = be.getFirstName() == null || StringUtils.isBlank(be.getFirstName()) ? "-"
-				: be.getFirstName();
+		        : be.getFirstName();
 		if (!fn.equals("-")) {
 			fn = fn.replaceAll("[^A-Za-z0-9\\s]+", "");
 		}
@@ -601,8 +601,7 @@ public class PatientService extends OpenmrsService {
 	
 	public JSONObject createPatient(Client c) throws JSONException {
 		String personUUIDString = createPerson(c).optString("uuid");
-
-		if(!StringUtils.isEmpty(personUUIDString)) {
+		if (!StringUtils.isEmpty(personUUIDString)) {
 			JSONObject p = new JSONObject();
 			p.put("person", personUUIDString);
 			
@@ -944,7 +943,7 @@ public class PatientService extends OpenmrsService {
 	public String fetchLocationByUUID(String locationUUID) {
 		try {
 			if (locationUUID == null || StringUtils.isBlank(locationUUID)
-					|| locationUUID.equalsIgnoreCase("Other")) {
+			        || locationUUID.equalsIgnoreCase("Other")) {
 				return locationUUID;
 			}
 			Location location = openmrsLocationService.getLocation(locationUUID);

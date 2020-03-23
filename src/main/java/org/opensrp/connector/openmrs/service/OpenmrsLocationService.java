@@ -1,9 +1,12 @@
 package org.opensrp.connector.openmrs.service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -19,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Credentials;
 import com.squareup.okhttp.OkHttpClient;
@@ -62,7 +66,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	public Location getLocation(String locationIdOrName) throws JSONException {
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
-		if (!StringUtils.isBlank(response) && (new JSONObject(response).has("uuid"))) {
+		if (!StringUtils.isBlank(response) && (new JSONObject(response).has(ConnectorConstants.UUID))) {
 			return makeLocation(response);
 		}
 		
