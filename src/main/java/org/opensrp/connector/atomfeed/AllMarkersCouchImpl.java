@@ -4,22 +4,23 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.support.GenerateView;
 import org.ektorp.support.View;
 import org.ict4h.atomfeed.client.repository.AllMarkers;
-import org.motechproject.dao.MotechBaseRepository;
 import org.opensrp.connector.atomfeed.domain.Marker;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
+import org.opensrp.connector.repository.couch.BaseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import com.mysql.jdbc.StringUtils;
-
+@Profile("atomfeed")
 @Repository
-public class AllMarkersCouchImpl extends MotechBaseRepository<Marker> implements AllMarkers {
+public class AllMarkersCouchImpl extends BaseRepository<Marker> implements AllMarkers {
 	
 	private CouchDbConnector db;
 	
@@ -33,7 +34,7 @@ public class AllMarkersCouchImpl extends MotechBaseRepository<Marker> implements
 	
 	@GenerateView
 	public Marker findByfeedUri(String feedUri) {
-		if (StringUtils.isEmptyOrWhitespaceOnly(feedUri))
+		if (StringUtils.isBlank(feedUri))
 			return null;
 		List<Marker> ol = queryView("by_feedUri", feedUri);
 		if (ol == null || ol.isEmpty()) {

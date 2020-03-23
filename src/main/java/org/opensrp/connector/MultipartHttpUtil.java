@@ -9,13 +9,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.opensrp.common.util.HttpResponse;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-
-import com.mysql.jdbc.StringUtils;
 
 /**
  * The class is a gateway to connect to external system via http for reading and writing data. All
@@ -91,7 +89,7 @@ public class MultipartHttpUtil {
 		if (url.endsWith("/")) {
 			url = url.substring(0, url.lastIndexOf("/"));
 		}
-		url = (url + (StringUtils.isEmptyOrWhitespaceOnly(payload) ? "" : ("?" + payload))).replaceAll(" ", "%20");
+		url = (url + (StringUtils.isBlank(payload) ? "" : ("?" + payload))).replaceAll(" ", "%20");
 		URL urlo = new URL(url);
 		HttpURLConnection conn = (HttpURLConnection) urlo.openConnection();
 		conn.setRequestProperty("Accept-Charset", charset);

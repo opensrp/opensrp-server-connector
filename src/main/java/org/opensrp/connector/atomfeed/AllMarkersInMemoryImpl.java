@@ -5,7 +5,9 @@ import java.util.HashMap;
 
 import org.ict4h.atomfeed.client.domain.Marker;
 import org.ict4h.atomfeed.client.repository.AllMarkers;
+import org.springframework.context.annotation.Profile;
 
+@Profile("atomfeed")
 //@Repository
 public class AllMarkersInMemoryImpl implements AllMarkers {
 	

@@ -7,7 +7,9 @@ import java.util.List;
 import org.ict4h.atomfeed.client.domain.FailedEvent;
 import org.ict4h.atomfeed.client.domain.FailedEventRetryLog;
 import org.ict4h.atomfeed.client.repository.AllFailedEvents;
+import org.springframework.context.annotation.Profile;
 
+@Profile("atomfeed")
 //@Repository
 public class AllFailedEventsInMemoryImpl implements AllFailedEvents {
 	

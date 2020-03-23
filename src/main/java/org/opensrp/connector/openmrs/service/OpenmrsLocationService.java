@@ -1,10 +1,14 @@
 package org.opensrp.connector.openmrs.service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.mysql.jdbc.StringUtils;
+import com.google.gson.Gson;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Credentials;
 import com.squareup.okhttp.OkHttpClient;
@@ -48,7 +52,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		try {
 			response = call.execute();
 			String responseBody=response.body().string();
-			if (!StringUtils.isEmptyOrWhitespaceOnly(responseBody)) {
+			if (!StringUtils.isBlank(responseBody)) {
 				return responseBody;
 			}
 		}
@@ -62,7 +66,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	public Location getLocation(String locationIdOrName) throws JSONException {
 		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
-		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response).has(ConnectorConstants.UUID))) {
+		if (!StringUtils.isBlank(response) && (new JSONObject(response).has(ConnectorConstants.UUID))) {
 			return makeLocation(response);
 		}
 		
@@ -269,7 +273,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
 				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display),attributes)&limit=100&startIndex="+startIndex);
 		logger.info("response received : {} ", response);
-		if (!StringUtils.isEmptyOrWhitespaceOnly(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
+		if (!StringUtils.isBlank(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
 			JSONArray results = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 			for (int i = 0; i < results.length(); i++) {
 				locationList.add(makeLocation(results.getJSONObject(i)));

@@ -1,6 +1,6 @@
 package org.opensrp.connector.openmrs.service.it;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.List;

@@ -9,16 +9,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.opensrp.common.util.HttpUtil.AuthType;
-import org.springframework.http.HttpMethod;
+import org.opensrp.connector.HttpMethod;
 import org.springframework.stereotype.Component;
-
-import com.mysql.jdbc.StringUtils;
 
 @Component
 public class Dhis2HttpUtils extends DHIS2Service {
@@ -37,7 +36,7 @@ public class Dhis2HttpUtils extends DHIS2Service {
 		if (url.endsWith("/")) {
 			url = url.substring(0, url.lastIndexOf("/"));
 		}
-		url = (url + (StringUtils.isEmptyOrWhitespaceOnly(payload) ? "" : ("?" + payload))).replaceAll(" ", "%20");
+		url = (url + (StringUtils.isBlank(payload) ? "" : ("?" + payload))).replaceAll(" ", "%20");
 		try {
 			URL urlo = new URL(url);
 			HttpURLConnection con = (HttpURLConnection) urlo.openConnection();

@@ -1,6 +1,6 @@
 package org.opensrp.connector.openmrs.service.it;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -11,15 +11,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.motechproject.scheduler.domain.MotechEvent;
 import org.opensrp.connector.openmrs.schedule.OpenmrsSyncerListener;
 import org.opensrp.connector.openmrs.service.EncounterService;
 import org.opensrp.connector.openmrs.service.OpenmrsUserService;
 import org.opensrp.connector.openmrs.service.PatientService;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
-import org.opensrp.repository.couch.AllClients;
-import org.opensrp.repository.couch.AllEvents;
+import org.opensrp.repository.postgres.ClientsRepositoryImpl;
+import org.opensrp.repository.postgres.EventsRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -29,10 +28,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class OpenmrsSyncerListenerTest extends OpenmrsApiService {
 	
 	@Autowired
-	private AllClients allClients;
+	private ClientsRepositoryImpl allClients;
 	
 	@Autowired
-	private AllEvents allEvents;
+	private EventsRepositoryImpl allEvents;
 	
 	@Autowired
 	private PatientService patientService;
@@ -45,8 +44,6 @@ public class OpenmrsSyncerListenerTest extends OpenmrsApiService {
 	
 	@Autowired
 	private EncounterService encounterService;
-	
-	MotechEvent event = new MotechEvent("subject");
 	
 	public OpenmrsSyncerListenerTest() throws IOException {
 		super();

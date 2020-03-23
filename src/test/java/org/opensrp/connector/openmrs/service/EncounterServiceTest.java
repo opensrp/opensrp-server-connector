@@ -1,7 +1,16 @@
 
 package org.opensrp.connector.openmrs.service;
 
-import org.hamcrest.Matchers;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.opensrp.common.AllConstants.Event.OPENMRS_UUID_IDENTIFIER_TYPE;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,43 +22,18 @@ import org.mockito.BDDMockito;
 import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.ConnectorTestConstants;
-import org.opensrp.connector.openmrs.constants.OpenmrsHouseHold;
-import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
 import org.opensrp.domain.Obs;
-import org.opensrp.form.domain.FormSubmission;
-import org.opensrp.form.service.FormAttributeParser;
-import org.opensrp.service.formSubmission.FormEntityConverter;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.opensrp.common.AllConstants.Event.OPENMRS_UUID_IDENTIFIER_TYPE;
-
 @RunWith (PowerMockRunner.class)
 @PrepareForTest ({HttpUtil.class})
-@PowerMockIgnore ({"org.apache.http.conn.ssl.*", "javax.net.ssl.*"})
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class EncounterServiceTest extends TestResourceLoader {
 	private EncounterService encounterService1;
-	private FormEntityConverter formEntityConverter;
 	private HouseholdService householdService;
 	
 	public EncounterServiceTest() throws IOException {
@@ -67,342 +51,8 @@ public class EncounterServiceTest extends TestResourceLoader {
 		householdService = new HouseholdService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 		householdService.setPatientService(patientService1);
 		householdService.setEncounterService(encounterService1);
-		FormAttributeParser fam = new FormAttributeParser(formDirPath);
-		formEntityConverter = new FormEntityConverter(fam);
 	}
 	
-	@Test
-	public void testEncounter() throws JSONException, IOException {
-		FormSubmission fs = getFormSubmissionFor("basic_reg");
-		
-		Client client = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(client.getBaseEntityId(), "b716d938-1aea-40ae-a081-9ddddddcccc9");
-		assertEquals(client.getFirstName(), "test woman_name");
-		assertEquals(client.getGender(), "FEMALE");
-		assertEquals(client.getAddresses().get(0).getAddressType(), "birthplace");
-		assertEquals(client.getAddresses().get(1).getAddressType(), "usual_residence");
-		assertEquals(client.getAddresses().get(2).getAddressType(), "previous_residence");
-		assertEquals(client.getAddresses().get(3).getAddressType(), "deathplace");
-		assertTrue(client.getAttributes().isEmpty());
-		
-		Event event = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(event.getEventType(), "patient_register");
-		assertEquals(event.getEventDate(), new DateTime(new DateTime("2015-02-01")));
-		assertEquals(event.getLocationId(), "unknown location");
-		
-		if (pushToOpenmrsForTest) {
-			JSONObject en = encounterService1.createEncounter(event);
-			System.out.println(en);
-		}
-	}
-	
-	@Test
-	public void shouldHandleSubForm() throws IOException {
-		FormSubmission fs = getFormSubmissionFor("new_household_registration", 1);
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBaseEntityId(), "a3f2abf4-2699-4761-819a-cea739224164");
-		assertEquals(c.getFirstName(), "test");
-		assertEquals(c.getGender(), "male");
-		assertEquals(c.getBirthdate(), new DateTime("1900-01-01"));
-		assertEquals(c.getAddresses().get(0).getAddressField("landmark"), "nothing");
-		assertEquals(c.getAddresses().get(0).getAddressType(), "usual_residence");
-		assertEquals(c.getIdentifiers().get("GOB HHID"), "1234");
-		assertEquals(c.getIdentifiers().get("JiVitA HHID"), "1234");
-		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(e.getBaseEntityId(), "a3f2abf4-2699-4761-819a-cea739224164");
-		assertEquals(e.getEventDate(), new DateTime(new DateTime("2015-05-07")));
-		assertEquals(e.getLocationId(), "KUPTALA");
-		assertEquals(e.getFormSubmissionId(), "88c0e824-10b4-44c2-9429-754b8d823776");
-		
-		assertEquals(e.getObs().get(0).getFieldCode(), "160753AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		assertEquals(e.getObs().get(0).getFormSubmissionField(), "FWNHREGDATE");
-		assertEquals(e.getObs().get(0).getValue(), "2015-05-07");
-		
-		assertEquals(e.getObs().get(1).getFieldCode(), "5611AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		assertEquals(e.getObs().get(1).getFormSubmissionField(), "FWNHHMBRNUM");
-		assertEquals(e.getObs().get(1).getValue(), "2");
-		
-		Map<String, Map<String, Object>> dc = formEntityConverter.getDependentClientsFromFormSubmission(fs);
-		for (String id : dc.keySet()) {
-			Client cl = (Client) dc.get(id).get("client");
-			Event ev = (Event) dc.get(id).get("event");
-			assertEquals(cl.getBaseEntityId(), id);
-			assertEquals(ev.getBaseEntityId(), id);
-		}
-	}
-	
-	@Test
-	public void shouldHandleEmptyRepeatGroup() throws IOException {
-		FormSubmission fs = getFormSubmissionFor("new_household_registration", 5);
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBaseEntityId(), "a3f2abf4-2699-4761-819a-cea739224164");
-		assertEquals(c.getFirstName(), "test");
-		assertEquals(c.getGender(), "male");
-		assertEquals(c.getBirthdate(), new DateTime("1900-01-01"));
-		assertEquals(c.getAddresses().get(0).getAddressField("landmark"), "nothing");
-		assertEquals(c.getAddresses().get(0).getAddressType(), "usual_residence");
-		assertEquals(c.getIdentifiers().get("GOB HHID"), "1234");
-		assertEquals(c.getIdentifiers().get("JiVitA HHID"), "1234");
-		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(e.getBaseEntityId(), "a3f2abf4-2699-4761-819a-cea739224164");
-		assertEquals(e.getEventDate(), new DateTime(new DateTime("2015-05-07")));
-		assertEquals(e.getLocationId(), "KUPTALA");
-		assertEquals(e.getFormSubmissionId(), "88c0e824-10b4-44c2-9429-754b8d823776");
-		
-		assertEquals(e.getObs().get(0).getFieldCode(), "160753AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		assertEquals(e.getObs().get(0).getFormSubmissionField(), "FWNHREGDATE");
-		assertEquals(e.getObs().get(0).getValue(), "2015-05-07");
-		
-		assertEquals(e.getObs().get(1).getFieldCode(), "5611AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-		assertEquals(e.getObs().get(1).getFormSubmissionField(), "FWNHHMBRNUM");
-		assertEquals(e.getObs().get(1).getValue(), "2");
-		
-		Map<String, Map<String, Object>> dc = formEntityConverter.getDependentClientsFromFormSubmission(fs);
-		assertTrue(dc.isEmpty());
-	}
-	
-	@Test
-	public void shouldGetBirthdateNotEstimatedForMainAndApproxForRepeatGroup()
-			throws IOException {
-		FormSubmission fs = getFormSubmissionFor("new_household_registration", 7);
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBirthdate(), new DateTime("1900-01-01"));
-		assertTrue(c.getBirthdateApprox());
-		
-		Map<String, Map<String, Object>> dc = formEntityConverter.getDependentClientsFromFormSubmission(fs);
-		for (String id : dc.keySet()) {
-			Client cl = (Client) dc.get(id).get("client");
-			assertEquals(cl.getBirthdate(), new DateTime("2000-05-07"));
-			assertFalse(cl.getBirthdateApprox());
-		}
-	}
-	
-	@Test
-	public void shouldGetBirthdateNotEstimatedForMainAndRepeatGroupIfNotSpecified()
-			throws IOException {
-		FormSubmission fs = getFormSubmissionFor("new_household_registration", 8);
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBirthdate(), new DateTime("1900-01-01"));
-		assertFalse(c.getBirthdateApprox());
-		
-		Map<String, Map<String, Object>> dc = formEntityConverter.getDependentClientsFromFormSubmission(fs);
-		for (String id : dc.keySet()) {
-			Client cl = (Client) dc.get(id).get("client");
-			assertEquals(cl.getBirthdate(), new DateTime("2000-05-07"));
-			assertFalse(cl.getBirthdateApprox());
-		}
-	}
-	
-	@SuppressWarnings ("unchecked")
-	@Test
-	public void shouldGetDataSpecifiedInGroupInsideSubform() throws IOException, ParseException, JSONException {
-		FormSubmission fs = getFormSubmissionFor("new_household_registration_with_grouped_subform_data", 1);
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBirthdate(), new DateTime("1900-01-01"));
-		assertFalse(c.getBirthdateApprox());
-		assertThat(c.getAttributes(), Matchers.<String, Object>hasEntry(equalTo("GoB_HHID"), equalTo((Object) "2322")));
-		assertThat(c.getAttributes(), Matchers.<String, Object>hasEntry(equalTo("JiVitA_HHID"), equalTo((Object) "9889")));
-		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(e.getBaseEntityId(), c.getBaseEntityId());
-		assertEquals(e.getEventType(), "New Household Registration");
-		assertEquals(e.getEventDate(), new DateTime(new SimpleDateFormat("yyyy-M-dd").parse("2015-10-11")));
-		assertEquals(e.getLocationId(), "2fc43738-ace5-g961-8e8f-ab7dg0e5bc63");
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("5611AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("value", equalTo("23")),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("FWNHHMBRNUM")))));
-		
-		Map<String, Map<String, Object>> dc = formEntityConverter.getDependentClientsFromFormSubmission(fs);
-		for (String id : dc.keySet()) {
-			Client cl = (Client) dc.get(id).get("client");
-			assertEquals(cl.getBirthdate(), new DateTime("1988-10-08"));
-			assertFalse(cl.getBirthdateApprox());
-			assertEquals(cl.getFirstName(), "jackfruit");
-			assertEquals(cl.getAddresses().get(0).getCountry(), "Bangladesh");
-			assertEquals(cl.getAddresses().get(0).getAddressType(), "usual_residence");
-			assertEquals(cl.getAddresses().get(0).getStateProvince(), "RANGPUR");
-			assertThat(cl.getIdentifiers(), Matchers.<String, String>hasEntry(equalTo("NID"), equalTo("7675788777775")));
-			assertThat(cl.getIdentifiers(),
-					Matchers.<String, String>hasEntry(equalTo("Birth Registration ID"), equalTo("98899998888888888")));
-			assertThat(cl.getAttributes(),
-					Matchers.<String, Object>hasEntry(equalTo("GoB_HHID"), equalTo((Object) "2322")));
-			assertThat(cl.getAttributes(),
-					Matchers.<String, Object>hasEntry(equalTo("JiVitA_HHID"), equalTo((Object) "9889")));
-			
-			Event ev = (Event) dc.get(id).get("event");
-			assertEquals(ev.getBaseEntityId(), cl.getBaseEntityId());
-			assertEquals(ev.getEventType(), "New Woman Registration");
-			assertEquals(ev.getEventDate(), new DateTime(new SimpleDateFormat("yyyy-M-dd").parse("2015-10-11")));
-			assertEquals(ev.getLocationId(), "2fc43738-ace5-g961-8e8f-ab7dg0e5bc63");
-			
-			assertThat(ev.getObs(),
-					Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-							Matchers.<Obs>hasProperty("fieldCode", equalTo("161135AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-							Matchers.<Obs>hasProperty("value", equalTo("zoom")),
-							Matchers.<Obs>hasProperty("formSubmissionField", equalTo("FWHUSNAME")))));
-			assertThat(ev.getObs(),
-					Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-							Matchers.<Obs>hasProperty("fieldCode", equalTo("163087AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-							Matchers.<Obs>hasProperty("values",
-									hasItems(equalTo("163084AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
-											equalTo("163083AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))),
-							Matchers.<Obs>hasProperty("formSubmissionField", equalTo("FWWOMANYID")))));
-		}
-		
-		if (pushToOpenmrsForTest) {
-			OpenmrsHouseHold hh = new OpenmrsHouseHold(c, e);
-			for (Map<String, Object> cm : dc.values()) {
-				hh.addHHMember((Client) cm.get("client"), (Event) cm.get("event"));
-			}
-			
-			householdService.saveHH(hh, true);
-		}
-	}
-	
-	@SuppressWarnings ("unchecked")
-	@Test
-	public void shouldGetDataSpecifiedInMultiselect() throws IOException {
-		FormSubmission formSubmission = getFormSubmissionFor("new_household_registration_with_grouped_subform_data", 1);
-		Map<String, Map<String, Object>> dependentClientsFromFormSubmission = formEntityConverter.getDependentClientsFromFormSubmission(formSubmission);
-		for (String id : dependentClientsFromFormSubmission.keySet()) {
-			Event event = (Event) dependentClientsFromFormSubmission.get(id).get("event");
-			
-			assertThat(event.getObs(),
-					Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-							Matchers.<Obs>hasProperty("fieldCode", equalTo("163087AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-							Matchers.<Obs>hasProperty("values",
-									hasItems(equalTo("163084AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
-											equalTo("163083AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))),
-							Matchers.<Obs>hasProperty("formSubmissionField", equalTo("FWWOMANYID")),
-							Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-							Matchers.<Obs>hasProperty("fieldDataType", startsWith("select all")))));
-		}
-	}
-	
-	@SuppressWarnings ("unchecked")
-	@Test
-	public void shouldHandleTTEnrollmentform() throws IOException {
-		FormSubmission fs = getFormSubmissionFor("woman_enrollment");
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBaseEntityId(), "69995674-bb29-4985-967a-fec8d372a475");
-		assertEquals(c.getFirstName(), "barsaat");
-		assertEquals(c.getGender(), "female");
-		assertEquals(c.getBirthdate(), new DateTime("1979-04-05"));
-		assertEquals(c.getAddresses().get(0).getAddressField("landmark"), "nishaani");
-		assertEquals(c.getAddresses().get(0).getStateProvince(), "sindh");
-		assertEquals(c.getAddresses().get(0).getCityVillage(), "karachi");
-		assertEquals(c.getAddresses().get(0).getTown(), "liaquatabad");
-		assertEquals(c.getAddresses().get(0).getSubTown(), "sharifabad");
-		assertEquals(c.getAddresses().get(0).getAddressField("house"), "6h");
-		assertEquals(c.getIdentifiers().get("Program Client ID"), "14608844");
-		assertEquals(c.getAttributes().get("EPI Card Number"), "20160003");
-		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(e.getBaseEntityId(), "69995674-bb29-4985-967a-fec8d372a475");
-		assertEquals(e.getEventDate(), new DateTime(new DateTime("2016-04-05")));
-		assertEquals(e.getLocationId(), "Homeopathic Center");
-		assertEquals(e.getFormSubmissionId(), "de408c93-2ec5-40bc-a957-eaf375583e27");
-		assertEquals(e.getEntityType(), "pkwoman");
-		assertEquals(e.getEventType(), "Woman TT enrollment");
-		assertEquals(e.getProviderId(), "demotest");
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("154384AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("values", hasItems(equalTo("37"))),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("calc_age_confirm")),
-						Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-						Matchers.<Obs>hasProperty("fieldDataType", startsWith("calculate")),
-						Matchers.<Obs>hasProperty("effectiveDatetime", equalTo(e.getEventDate())))));
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("values", hasItems(equalTo("2016-04-05 16:21:32"))),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("start")),
-						Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-						Matchers.<Obs>hasProperty("fieldDataType", startsWith("start")),
-						Matchers.<Obs>hasProperty("effectiveDatetime", equalTo(e.getEventDate())))));
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("values", hasItems(equalTo("2016-04-05 16:23:59"))),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("end")),
-						Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-						Matchers.<Obs>hasProperty("fieldDataType", startsWith("end")),
-						Matchers.<Obs>hasProperty("effectiveDatetime", equalTo(e.getEventDate())))));
-		
-	}
-	
-	@SuppressWarnings ("unchecked")
-	@Test
-	public void shouldHandleChildVaccinationEnrollmentform() throws IOException {
-		FormSubmission fs = getFormSubmissionFor("child_enrollment");
-		
-		Client c = formEntityConverter.getClientFromFormSubmission(fs);
-		assertEquals(c.getBaseEntityId(), "ad653225-6bed-48d3-8e5d-741d3d50d61a");
-		assertEquals(c.getFirstName(), "aase");
-		assertEquals(c.getLastName(), "zeest");
-		assertEquals(c.getGender(), "male");
-		assertEquals(c.getBirthdate(), new DateTime("2016-01-03"));
-		assertEquals(c.getAddresses().get(0).getAddressField("landmark"), "nishaani");
-		assertEquals(c.getAddresses().get(0).getStateProvince(), "sindh");
-		assertEquals(c.getAddresses().get(0).getCityVillage(), "karachi");
-		assertEquals(c.getAddresses().get(0).getTown(), "liaquatabad");
-		assertEquals(c.getAddresses().get(0).getSubTown(), "mujahid_colony");
-		assertEquals(c.getAddresses().get(0).getAddressField("house"), "hi65");
-		assertEquals(c.getIdentifiers().get("Program Client ID"), "98120722");
-		assertEquals(c.getAttributes().get("EPI Card Number"), "20160009");
-		
-		Event e = formEntityConverter.getEventFromFormSubmission(fs);
-		assertEquals(e.getBaseEntityId(), "ad653225-6bed-48d3-8e5d-741d3d50d61a");
-		assertEquals(e.getEventDate(), new DateTime(new DateTime("2016-03-05")));
-		assertEquals(e.getLocationId(), "Homeopathic Center");
-		assertEquals(e.getFormSubmissionId(), "8524f6b8-441a-4769-aa74-03e1dde0901a");
-		assertEquals(e.getEntityType(), "pkchild");
-		assertEquals(e.getEventType(), "Child Vaccination Enrollment");
-		assertEquals(e.getProviderId(), "demotest");
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("154384AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("values", hasItems(equalTo("2"))),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("calc_age_confirm")),
-						Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-						Matchers.<Obs>hasProperty("fieldDataType", startsWith("calculate")),
-						Matchers.<Obs>hasProperty("effectiveDatetime", equalTo(e.getEventDate())))));
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("163137AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("values", hasItems(equalTo("2016-03-05 23:01:13"))),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("start")),
-						Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-						Matchers.<Obs>hasProperty("fieldDataType", startsWith("start")),
-						Matchers.<Obs>hasProperty("effectiveDatetime", equalTo(e.getEventDate())))));
-		
-		assertThat(e.getObs(),
-				Matchers.<Obs>hasItem(Matchers.<Obs>allOf(
-						Matchers.<Obs>hasProperty("fieldCode", equalTo("163138AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")),
-						Matchers.<Obs>hasProperty("values", hasItems(equalTo("2016-03-05 23:03:51"))),
-						Matchers.<Obs>hasProperty("formSubmissionField", equalTo("end")),
-						Matchers.<Obs>hasProperty("fieldType", equalTo("concept")),
-						Matchers.<Obs>hasProperty("fieldDataType", startsWith("end")),
-						Matchers.<Obs>hasProperty("effectiveDatetime", equalTo(e.getEventDate())))));
-		
-	}
 	
 	@Test
 	public void testCreateEncounter() throws JSONException {

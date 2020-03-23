@@ -30,8 +30,8 @@ import org.opensrp.domain.Address;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
 import org.opensrp.domain.Obs;
-import org.opensrp.repository.couch.AllClients;
-import org.opensrp.repository.couch.AllEvents;
+import org.opensrp.repository.postgres.ClientsRepositoryImpl;
+import org.opensrp.repository.postgres.EventsRepositoryImpl;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,10 +55,10 @@ public class AtomFeedTest extends OpenmrsApiService {
 	EventService es;
 	
 	@Autowired
-	private AllClients allClients;
+	private ClientsRepositoryImpl allClients;
 	
 	@Autowired
-	private AllEvents allEvents;
+	private EventsRepositoryImpl allEvents;
 	
 	@Autowired
 	private EncounterService encounterService;

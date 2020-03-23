@@ -4,10 +4,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.ektorp.support.TypeDiscriminator;
-import org.motechproject.model.MotechBaseDataObject;
+import org.opensrp.domain.BaseDataObject;
 
 @TypeDiscriminator("doc.type == 'Marker'")
-public class Marker extends MotechBaseDataObject {
+public class Marker extends BaseDataObject {
 	
 	private String feedUri;
 	

@@ -6,21 +6,20 @@
 
     <artifactId>opensrp-server-connector</artifactId>
     <packaging>jar</packaging>
-
-    <version>1.0.8-SNAPSHOT</version>
-
+    <version>2.0.0-SNAPSHOT</version>
     <name>opensrp-server-connector</name>
     <description>OpenSRP Server Connector module</description>
     <url>http://github.com/OpenSRP/opensrp-server-connector</url>
 
     <properties>
         <main.basedir>${project.basedir}</main.basedir>
-        <spring.version>3.1.0.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <nexus-staging-maven-plugin.version>1.5.1</nexus-staging-maven-plugin.version>
-
+		<spring.version>5.2.3.RELEASE</spring.version>
         <opensrp.api.version>1.0.1</opensrp.api.version>
-        <opensrp.core.version>1.0.1</opensrp.core.version>
+        <opensrp.common.version>2.0.0-alpha2-SNAPSHOT</opensrp.common.version>
+        <opensrp.core.version>2.0.0-alpha9-SNAPSHOT</opensrp.core.version>
+        <powermock.version>2.0.5</powermock.version>
 
     </properties>
 
@@ -85,32 +84,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.7</version>
-        </dependency>
-        <dependency>
             <groupId>org.smartregister</groupId>
             <artifactId>opensrp-server-api</artifactId>
             <version>${opensrp.api.version}</version>
@@ -120,28 +93,10 @@
             <artifactId>opensrp-server-core</artifactId>
             <version>${opensrp.core.version}</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.8.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>1.4.9</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>1.4.9</version>
-            <scope>test</scope>
+          <dependency>
+            <groupId>org.smartregister</groupId>
+            <artifactId>opensrp-server-common</artifactId>
+            <version>${opensrp.common.version}</version>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>
@@ -170,25 +125,63 @@
             <version>1.54</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
 		    <groupId>com.squareup.okhttp</groupId>
 		    <artifactId>okhttp</artifactId>
 		    <version>2.7.5</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.ektorp</groupId>
+			<artifactId>org.ektorp</artifactId>
+			<version>1.5.0</version>
+		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4-rule</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito2</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-classloading-xstream</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.mockito</groupId>
+		    <artifactId>mockito-core</artifactId>
+		    <version>3.3.0</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
 
     <build>
         <finalName>opensrp-server-connector</finalName>
         <resources>
-            <resource>
-                <directory>configs/assets/schedules</directory>
-                <targetPath>schedules</targetPath>
-            </resource>
             <resource>
                 <directory>configs/assets/config</directory>
             </resource>
@@ -199,23 +192,15 @@
                     <include>maven.properties</include>
                 </includes>
             </resource>
-            <resource>
-                <directory>configs/modules/core/ziggy</directory>
-                <targetPath>ziggy</targetPath>
-            </resource>
-            <resource>
-                <directory>configs/modules/core/queries</directory>
-                <targetPath>queries</targetPath>
-            </resource>
         </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>11</source>
+                    <target>11</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -249,7 +234,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.0</version>
                 <configuration>
                     <excludes>
                         <exclude>**/*.properties</exclude>
@@ -259,7 +244,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20</version>
+                <version>2.22.2</version>
                 <configuration>
                     <printSummary>true</printSummary>
                     <excludes>
@@ -290,7 +275,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.5</version>
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
@@ -314,7 +299,14 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
+                <dependencies>
+					<dependency>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
+						<version>2.3.1</version>
+					</dependency>
+				</dependencies>
             </plugin>
         </plugins>
     </build>

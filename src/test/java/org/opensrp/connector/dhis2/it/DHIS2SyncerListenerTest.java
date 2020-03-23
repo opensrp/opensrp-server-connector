@@ -1,6 +1,6 @@
 package org.opensrp.connector.dhis2.it;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,8 +22,8 @@ import org.opensrp.connector.openmrs.service.TestResourceLoader;
 import org.opensrp.domain.Client;
 import org.opensrp.domain.Event;
 import org.opensrp.domain.Obs;
-import org.opensrp.repository.couch.AllClients;
-import org.opensrp.repository.couch.AllEvents;
+import org.opensrp.repository.postgres.ClientsRepositoryImpl;
+import org.opensrp.repository.postgres.EventsRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -33,10 +33,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class DHIS2SyncerListenerTest extends TestResourceLoader {
 	
 	@Autowired
-	private AllClients allClients;
+	private ClientsRepositoryImpl allClients;
 	
 	@Autowired
-	private AllEvents allEvents;
+	private EventsRepositoryImpl allEvents;
 	
 	@Autowired
 	private DHIS2SyncerListener dhis2SyncerListener;
