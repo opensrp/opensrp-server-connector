@@ -138,14 +138,12 @@ public class DHIS2DatasetPush extends DHIS2Service {
 		JSONArray dataValues = new JSONArray();
 		
 		for (Hia2Indicator indicator : indicators) {
-			if (!indicator.getDhisId().equals("unknown")) {
+			if (!("unknown").equals(indicator.getDhisId())) {
 				if (StringUtils.isNotBlank(indicator.getDhisId()) && availableIndicators.contains(indicator.getDhisId())) {
-					
 					JSONObject dataValue = new JSONObject();
-					
+					dataValue.put("categoryOptionCombo", indicator.getCategoryOptionCombo());
 					dataValue.put("dataElement", indicator.getDhisId());
 					dataValue.put("value", indicator.getValue());
-					
 					dataValues.put(dataValue);
 				}
 				
