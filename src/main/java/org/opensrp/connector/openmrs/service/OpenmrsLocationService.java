@@ -367,6 +367,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	public JSONArray getLocationsByTeamIds(List<String> openMRSTeamLocationsUUIDs) throws JSONException {
 		JSONArray teamMemberLocations = new JSONArray();
 		HttpResponse httpResponse = getAllTeamMembersHttpResponse();
+		logger.info(httpResponse.body());
 
 		JSONArray results = new JSONObject(httpResponse.body()).getJSONArray("results");
 
@@ -388,7 +389,6 @@ public class OpenmrsLocationService extends OpenmrsService {
 			}
 			catch (Exception e) {
 				logger.error("Error fetching locations: ", e);
-				return new JSONArray();
 			}
 		}
 		return teamMemberLocations;
