@@ -1,20 +1,22 @@
 package org.opensrp.connector.openmrs.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.util.List;
-
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
+import org.opensrp.common.util.HttpResponse;
 
-import com.google.gson.Gson;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class OpenmrsLocationTest extends TestResourceLoader {
 	
@@ -59,7 +61,6 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		List<Location> allLocations = new Gson().fromJson(locationJson, new TypeToken<List<Location>>() {
 		}.getType());
 
-
 		JSONArray locationTagsQueried = null;
 		try {
 			locationTagsQueried = new JSONArray("[\n" +
@@ -70,13 +71,29 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		}
 
 		String locationTopLevel = "Council";
-
-		List<Location> councilFacilities = openmrsLocationService.getLocationsByLevelAndTagsFromAllLocationsList("25820e25-76c5-455a-812d-0934db2564f5", allLocations,locationTopLevel,locationTagsQueried);
+		OpenmrsLocationService locationService = Mockito.spy(
+				new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
+		Mockito.doReturn(allLocations).when(locationService).getAllLocations(Mockito.anyList(), Mockito.anyInt());
+		List<Location> councilFacilities = locationService.getLocationsByLevelAndTags("25820e25-76c5-455a-812d-0934db2564f5",locationTopLevel,locationTagsQueried);
 
 		assertEquals(3, councilFacilities.size());
 		assertEquals("Ebrahim Haji", councilFacilities.get(0).getName());
 		assertEquals("Madona", councilFacilities.get(1).getName());
 		assertEquals("Mnazi Mmoja", councilFacilities.get(2).getName());
 
+	}
+
+	@Test
+	public void getLocationsByTeamIds(){
+		String teamLocations = "{\"results\":[{\"locations\":[{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"display\":\"Kabila Village\"}],\"team\":{\"location\":{\"display\":\"Huruma\",\"uuid\":\"718b2864-7d6a-44c8-b5b6-bb375f82654e\"}}},{\"locations\":[{\"uuid\":\"515c288e-5e95-4559-9de3-4192a73433d3\",\"display\":\"Mahaha Village\"}],\"team\":{\"location\":{\"display\":\"Mahaha\",\"uuid\":\"c99043c5-1d6f-4dec-967f-524a532654a9\"}}},{\"locations\":[{\"uuid\":\"718b2864-7d6a-44c8-b5b6-bb375f82654e\",\"display\":\"Huruma\"}],\"team\":{\"location\":{\"display\":\"Huruma\",\"uuid\":\"718b2864-7d6a-44c8-b5b6-bb375f82654e\"}}},{\"locations\":[{\"uuid\":\"c99043c5-1d6f-4dec-967f-524a532654a9\",\"display\":\"Mahaha\"}],\"team\":{\"location\":{\"display\":\"Mahaha\",\"uuid\":\"c99043c5-1d6f-4dec-967f-524a532654a9\"}}},{\"locations\":[{\"uuid\":\"515c288e-5e95-4559-9de3-4192a73433d3\",\"display\":\"Mahaha Village\"}],\"team\":{\"location\":{\"display\":\"Mahaha Village\",\"uuid\":\"515c288e-5e95-4559-9de3-4192a73433d3\"}}},{\"locations\":[{\"uuid\":\"aea836ea-1b7a-4671-af43-a57b26af9c2e\",\"display\":\"Ihanja Village\"}],\"team\":{\"location\":{\"display\":\"Ihanja Village\",\"uuid\":\"aea836ea-1b7a-4671-af43-a57b26af9c2e\"}}},{\"locations\":[{\"uuid\":\"84ed9853-219f-4032-8277-ca7efe006ac4\",\"display\":\"Isolo\"}],\"team\":{\"location\":{\"display\":\"Isolo\",\"uuid\":\"84ed9853-219f-4032-8277-ca7efe006ac4\"}}},{\"locations\":[{\"uuid\":\"74ebd30a-4a94-4265-b584-5f0d1ac0b7d0\",\"display\":\"Shishani Village\"}],\"team\":{\"location\":{\"display\":\"Shishani Village\",\"uuid\":\"74ebd30a-4a94-4265-b584-5f0d1ac0b7d0\"}}},{\"locations\":[{\"uuid\":\"953a6380-ef26-4453-a343-63216dd8862f\",\"display\":\"Ijinga Dispensary\"}],\"team\":{\"location\":{\"display\":\"Ijinga Dispensary\",\"uuid\":\"953a6380-ef26-4453-a343-63216dd8862f\"}}},{\"locations\":[{\"uuid\":\"2637756d-e025-401d-b0b4-69f8694f7d8c\",\"display\":\"Kisesa Dispensary\"}],\"team\":{\"location\":{\"display\":\"Kisesa Dispensary\",\"uuid\":\"2637756d-e025-401d-b0b4-69f8694f7d8c\"}}},{\"locations\":[{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"display\":\"Kabila Village\"}],\"team\":{\"location\":{\"display\":\"Kabila Village\",\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\"}}}]}";
+		OpenmrsLocationService locationService = Mockito.spy(
+				new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
+		locationService.OPENMRS_VERSION = "2.1.4";
+		Mockito.doReturn(new HttpResponse(true, 200, teamLocations)).when(locationService).getAllTeamMembersHttpResponse();
+		JSONArray locationsByTeamIds = locationService
+				.getLocationsByTeamIds(Collections.singletonList("718b2864-7d6a-44c8-b5b6-bb375f82654e"));
+		assertEquals(locationsByTeamIds.length(), 1);
+		assertEquals(locationsByTeamIds.getJSONObject(0).getJSONArray("locations").getJSONObject(0).getString("display"), "Kabila Village");
+		assertEquals(0, locationService.getLocationsByTeamIds(Collections.emptyList()).length());
 	}
 }

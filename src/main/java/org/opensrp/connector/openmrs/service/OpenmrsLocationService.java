@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
+import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.slf4j.Logger;
@@ -28,6 +29,8 @@ import com.squareup.okhttp.Credentials;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+
+import static org.opensrp.common.util.OpenMRSCrossVariables.TEAM_MEMBER_URL;
 
 @Service
 public class OpenmrsLocationService extends OpenmrsService {
@@ -261,6 +264,14 @@ public class OpenmrsLocationService extends OpenmrsService {
 		
 	};
 
+	/**
+	 * This method is used on OpenSRP web as a wrapper around implementation of fetching location by level and tags
+	 * @param uuid unique id of the location
+	 * @param locationTopLevel highest level of location hierarchy to begin querying from
+	 * @param locationTagsQueried OpenMRS tags to use when filtering the locations
+	 * @return List of locations matching the specified tags
+	 * @throws JSONException
+	 */
 	public List<Location> getLocationsByLevelAndTags(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
 		List<Location> allLocationsList = new ArrayList<>();
 		allLocationsList = getAllLocations(allLocationsList,0);
@@ -345,4 +356,52 @@ public class OpenmrsLocationService extends OpenmrsService {
 		}
 		return obtainedLocations;
 	}
+
+
+	/**
+	 * Fetch OpenMRS locations that are part of teams with the provided ids
+	 * @param openMRSTeamLocationsUUIDs ids for the teams
+	 * @return a list of location for belonging to the passed teams
+	 * @throws JSONException
+	 */
+	public JSONArray getLocationsByTeamIds(List<String> openMRSTeamLocationsUUIDs) throws JSONException {
+		JSONArray teamMemberLocations = new JSONArray();
+		HttpResponse httpResponse = getAllTeamMembersHttpResponse();
+
+		JSONArray results = new JSONObject(httpResponse.body()).getJSONArray("results");
+
+		for (int i = 0; i < results.length(); i++) {
+			try {
+				JSONObject locationDetails = results.getJSONObject(i);
+				JSONObject team = locationDetails.getJSONObject("team");
+				JSONArray locations = locationDetails.getJSONArray("locations");
+				for (int index = 0; index < locations.length(); index++) {
+					if (team != null) {
+						String teamLocationUUID = team.getJSONObject("location").getString("uuid");
+						String locationUUID = locations.getJSONObject(index).getString("uuid");
+						if (openMRSTeamLocationsUUIDs.contains(teamLocationUUID)
+								&& !locationUUID.equalsIgnoreCase(teamLocationUUID)) {
+							teamMemberLocations.put(locationDetails);
+						}
+					}
+				}
+			}
+			catch (Exception e) {
+				logger.error("Error fetching locations: ", e);
+				return new JSONArray();
+			}
+		}
+		return teamMemberLocations;
+	}
+
+	/**
+	 * Get HTTP response for fetching all team members. (necessary so as to mock the response with Mockito and not Powermock)
+	 * @return HttpResponse
+	 */
+	public HttpResponse getAllTeamMembersHttpResponse() {
+		return HttpUtil.get(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/"
+						+ TEAM_MEMBER_URL.makeVariable(OPENMRS_VERSION),
+				"v=custom:(locations:(uuid,display),team:(location:(display,uuid)))");
+	}
+
 }
