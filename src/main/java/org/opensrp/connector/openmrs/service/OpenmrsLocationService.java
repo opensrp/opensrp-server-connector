@@ -1,7 +1,11 @@
 package org.opensrp.connector.openmrs.service;
 
 import com.google.gson.Gson;
-import com.squareup.okhttp.*;
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Credentials;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
