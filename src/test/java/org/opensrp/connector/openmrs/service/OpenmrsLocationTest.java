@@ -94,4 +94,16 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		assertEquals(locationsByTeamIds.getJSONObject(0).getJSONArray("locations").getJSONObject(0).getString("display"), "Kabila Village");
 		assertEquals(0, locationService.getLocationsByTeamIds(Collections.emptyList()).length());
 	}
+
+	@Test
+	public void getLocation(){
+		OpenmrsLocationService locationService = Mockito.spy(
+				new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
+		locationService.OPENMRS_VERSION = "2.1.4";
+		Mockito.doReturn("{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"name\":\"Kabila Village\",\"tags\":[{\"display\":\"Som display\"}],\"attributes\":[{\"voided\":false,\"display\":\"Another:Display\"}]}").when(locationService).getURL(Mockito.anyString());
+		Location location = locationService.getLocation("2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8");
+		assertNotNull(location);
+		assertEquals(location.getName(), "Kabila Village");
+		assertEquals(location.getTags().size(), 1);
+	}
 }

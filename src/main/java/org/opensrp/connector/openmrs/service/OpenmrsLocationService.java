@@ -40,7 +40,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 		super(openmrsUrl, user, password);
 	}
 
-	private String getURL(String url) {
+	public String getURL(String url) {
 		Request request = new Request.Builder().url(url)
 		        .addHeader("Authorization", Credentials.basic(OPENMRS_USER, OPENMRS_PWD)).build();
 		OkHttpClient client = new OkHttpClient();
@@ -83,27 +83,29 @@ public class OpenmrsLocationService extends OpenmrsService {
 
 	private Location makeLocation(String locationJson) throws JSONException {
 		logger.info("makeLocation: " + locationJson);
-		JSONObject obj = new JSONObject(locationJson);
-		Location p = getParent(obj);
-		Location l = new Location(obj.getString(ConnectorConstants.UUID), obj.getString(ConnectorConstants.NAME), null, null, p, null, null);
-		JSONArray t = obj.getJSONArray(ConnectorConstants.TAGS);
+		JSONObject locationsJsonObject = new JSONObject(locationJson);
+		Location parentLocation = getParent(locationsJsonObject);
+		Location location = new Location(locationsJsonObject.getString(ConnectorConstants.UUID), locationsJsonObject.getString(ConnectorConstants.NAME), null, null, parentLocation, null, null);
+		JSONArray tags = locationsJsonObject.getJSONArray(ConnectorConstants.TAGS);
 
-		for (int i = 0; i < t.length(); i++) {
-			l.addTag(t.getJSONObject(i).getString(ConnectorConstants.DISPLAY));
+		for (int i = 0; i < tags.length(); i++) {
+			location.addTag(tags.getJSONObject(i).getString(ConnectorConstants.DISPLAY));
 		}
 
-		JSONArray a = obj.getJSONArray(ConnectorConstants.ATTRIBUTES);
-
-		for (int i = 0; i < a.length(); i++) {
-			boolean voided = a.getJSONObject(i).optBoolean(ConnectorConstants.VOIDED);
-			if (!voided) {
-				String ad = a.getJSONObject(i).getString(ConnectorConstants.DISPLAY);
-				l.addAttribute(ad.substring(0, ad.indexOf(":")), ad.substring(ad.indexOf(":") + 2));
+		if(locationsJsonObject.has(ConnectorConstants.ATTRIBUTES)) {
+			JSONArray attributes = locationsJsonObject.getJSONArray(ConnectorConstants.ATTRIBUTES);
+			for (int i = 0; i < attributes.length(); i++) {
+				JSONObject attribute = attributes.getJSONObject(i);
+				boolean voided = attribute.optBoolean(ConnectorConstants.VOIDED);
+				if (!voided) {
+					String ad = attribute.getString(ConnectorConstants.DISPLAY);
+					location.addAttribute(ad.substring(0, ad.indexOf(":")), ad.substring(ad.indexOf(":") + 2));
+				}
 			}
 		}
 
-		logger.info("location: " + ReflectionToStringBuilder.toString(l));
-		return l;
+		logger.info("location: " + ReflectionToStringBuilder.toString(location));
+		return location;
 	}
 
 	private Location makeLocation(JSONObject location) throws JSONException {
@@ -363,12 +365,12 @@ public class OpenmrsLocationService extends OpenmrsService {
 		for (int i = 0; i < results.length(); i++) {
 			try {
 				JSONObject locationDetails = results.getJSONObject(i);
-				JSONObject team = locationDetails.getJSONObject("team");
-				JSONArray locations = locationDetails.getJSONArray("locations");
+				JSONObject team = locationDetails.getJSONObject(ConnectorConstants.TEAM);
+				JSONArray locations = locationDetails.getJSONArray(ConnectorConstants.LOCATIONS);
 				for (int index = 0; index < locations.length(); index++) {
 					if (team != null) {
-						String teamLocationUUID = team.getJSONObject("location").getString("uuid");
-						String locationUUID = locations.getJSONObject(index).getString("uuid");
+						String teamLocationUUID = team.getJSONObject(ConnectorConstants.LOCATION).getString(ConnectorConstants.UUID);
+						String locationUUID = locations.getJSONObject(index).getString(ConnectorConstants.UUID);
 						if (openMRSTeamLocationsUUIDs.contains(teamLocationUUID)
 								&& !locationUUID.equalsIgnoreCase(teamLocationUUID)) {
 							teamMemberLocations.put(locationDetails);
