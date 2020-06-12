@@ -29,4 +29,6 @@ public class ConnectorConstants {
 	public static final String TAGS = "tags";
 	public static final String ATTRIBUTES = "attributes";
 	public static final String CHILD_LOCATIONS = "childLocations";
+    public static final String LOCATIONS = "locations";
+	public static final String TEAM = "team";
 }
