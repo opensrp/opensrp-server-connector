@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.opensrp.domain.Client;
-import org.opensrp.domain.Obs;
+import org.smartregister.domain.Client;
+import org.smartregister.domain.Obs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

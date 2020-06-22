@@ -11,8 +11,8 @@ import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensrp.domain.Address;
-import org.opensrp.domain.Client;
+import org.smartregister.domain.Address;
+import org.smartregister.domain.Client;
 
 public class PatientTest extends TestResourceLoader {
 	
