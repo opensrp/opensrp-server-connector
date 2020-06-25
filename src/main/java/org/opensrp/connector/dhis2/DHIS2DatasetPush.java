@@ -64,7 +64,7 @@ public class DHIS2DatasetPush extends DHIS2Service {
 	
 	public String getDHIS2ReportId(String reportName) throws JSONException {
 		String reportId = "";
-		JSONObject response = dhis2HttpUtils.get("dataSets.json", "");
+		JSONObject response = dhis2HttpUtils.get("dataSets.json?paging=false", "");
 		
 		if (!response.has("dataSets")) {
 			throw new JSONException("Required dataSets key is absent");
