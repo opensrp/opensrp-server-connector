@@ -4,7 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.ektorp.support.TypeDiscriminator;
-import org.opensrp.domain.BaseDataObject;
+import org.smartregister.domain.BaseDataObject;
 
 @TypeDiscriminator("doc.type == 'Marker'")
 public class Marker extends BaseDataObject {

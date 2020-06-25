@@ -11,7 +11,7 @@ import org.ektorp.CouchDbConnector;
 import org.ektorp.ViewQuery;
 import org.ektorp.support.CouchDbRepositorySupport;
 import org.ektorp.support.GenerateView;
-import org.opensrp.domain.BaseDataEntity;
+import org.smartregister.domain.BaseDataEntity;
 
 
 /**

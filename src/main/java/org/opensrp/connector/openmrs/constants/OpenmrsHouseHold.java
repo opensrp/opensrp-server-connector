@@ -4,8 +4,8 @@ package org.opensrp.connector.openmrs.constants;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opensrp.domain.Client;
-import org.opensrp.domain.Event;
+import org.smartregister.domain.Client;
+import org.smartregister.domain.Event;
 
 /**
  * Organizer for multiple Clients and Events as a single household.

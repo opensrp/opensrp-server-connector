@@ -15,7 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.opensrp.common.util.HttpResponse;
 import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.SpringApplicationContextProvider;
-import org.opensrp.domain.Client;
+import org.smartregister.domain.Client;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;

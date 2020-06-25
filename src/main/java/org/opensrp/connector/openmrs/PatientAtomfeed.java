@@ -29,8 +29,8 @@ import org.opensrp.connector.atomfeed.AtomfeedService;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
 import org.opensrp.connector.openmrs.service.OpenmrsService;
 import org.opensrp.connector.openmrs.service.PatientService;
-import org.opensrp.domain.Client;
-import org.opensrp.domain.Obs;
+import org.smartregister.domain.Client;
+import org.smartregister.domain.Obs;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,15 +174,15 @@ public class PatientAtomfeed extends OpenmrsService implements EventWorker, Atom
 			final String START = "start";
 			final String END = "end";
 			
-			List<org.opensrp.domain.Event> events = eventService.findByBaseEntityId(client.getBaseEntityId());
-			org.opensrp.domain.Event birthRegEvent = null;
-			org.opensrp.domain.Event emptyUpdateBirthRegEvent = null;
+			List<org.smartregister.domain.Event> events = eventService.findByBaseEntityId(client.getBaseEntityId());
+			org.smartregister.domain.Event birthRegEvent = null;
+			org.smartregister.domain.Event emptyUpdateBirthRegEvent = null;
 			
 			if (events == null || events.isEmpty()) {
 				return;
 			}
 			
-			for (org.opensrp.domain.Event event : events) {
+			for (org.smartregister.domain.Event event : events) {
 				if (event.getEventType().equals("Birth Registration")) {
 					birthRegEvent = event;
 					break;
@@ -193,7 +193,7 @@ public class PatientAtomfeed extends OpenmrsService implements EventWorker, Atom
 				return;
 			}
 			
-			for (org.opensrp.domain.Event event : events) {
+			for (org.smartregister.domain.Event event : events) {
 				if (event.getEventType().equals("Update Birth Registration") && event.getObs().size() == 2) {
 					boolean startEvent = false;
 					boolean endEvent = false;
@@ -221,7 +221,7 @@ public class PatientAtomfeed extends OpenmrsService implements EventWorker, Atom
 				eventService.updateEvent(emptyUpdateBirthRegEvent);
 			} else {
 				
-				org.opensrp.domain.Event event = (org.opensrp.domain.Event) new org.opensrp.domain.Event()
+				org.smartregister.domain.Event event = (org.smartregister.domain.Event) new org.smartregister.domain.Event()
 				        .withBaseEntityId(client.getBaseEntityId()).withEventDate(client.getDateEdited())
 				        .withEventType("Update Birth Registration").withLocationId(birthRegEvent.getLocationId())
 				        .withProviderId(birthRegEvent.getProviderId()).withEntityType(birthRegEvent.getEntityType())
