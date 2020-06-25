@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.ektorp.support.TypeDiscriminator;
 import org.ict4h.atomfeed.client.domain.Event;
-import org.opensrp.domain.BaseDataObject;
+import org.smartregister.domain.BaseDataObject;
 
 @TypeDiscriminator("type == 'FailedEvent'")
 public class FailedEvent extends BaseDataObject {

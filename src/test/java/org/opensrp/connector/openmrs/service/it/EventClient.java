@@ -11,10 +11,10 @@ import org.joda.time.DateTimeZone;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.opensrp.connector.openmrs.service.PatientService;
-import org.opensrp.domain.Address;
-import org.opensrp.domain.Client;
-import org.opensrp.domain.Event;
-import org.opensrp.domain.Obs;
+import org.smartregister.domain.Address;
+import org.smartregister.domain.Client;
+import org.smartregister.domain.Event;
+import org.smartregister.domain.Obs;
 
 public class EventClient extends OpenmrsApiService {
 	

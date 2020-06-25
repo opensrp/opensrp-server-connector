@@ -3,7 +3,7 @@ package org.opensrp.connector.rapidpro;
 import java.util.Map;
 
 import org.opensrp.domain.Camp;
-import org.opensrp.domain.Client;
+import org.smartregister.domain.Client;
 
 public class WomanAnnouncementMessage implements Message {
 	
