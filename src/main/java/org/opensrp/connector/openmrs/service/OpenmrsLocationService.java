@@ -87,7 +87,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 
 	private Location makeLocation(String locationJson) throws JSONException {
-		logger.info("makeLocation: " + locationJson);
+		logger.debug("makeLocation: " + locationJson);
 		JSONObject locationsJsonObject = new JSONObject(locationJson);
 		Location parentLocation = getParent(locationsJsonObject);
 		Location location = new Location(locationsJsonObject.getString(ConnectorConstants.UUID), locationsJsonObject.getString(ConnectorConstants.NAME), null, null, parentLocation, null, null);
@@ -109,7 +109,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 			}
 		}
 
-		logger.info("location: " + ReflectionToStringBuilder.toString(location));
+		logger.debug("location: " + ReflectionToStringBuilder.toString(location));
 		return location;
 	}
 
@@ -154,13 +154,13 @@ public class OpenmrsLocationService extends OpenmrsService {
 			String locTreeId = fillTreeWithHierarchy(ltr, loc);
 			Location lp = ltr.findLocation(locTreeId).getParentLocation();
 			LoggerFactory.getLogger(this.getClass())
-			        .info("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
+			        .debug("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
 			if (lp != null) {
 				fillTreeWithUpperHierarchy(ltr, lp.getLocationId());
 			}
 		}
 
-		LoggerFactory.getLogger(this.getClass()).info("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
+		LoggerFactory.getLogger(this.getClass()).debug("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
 		return ltr;
 	}
 
@@ -277,14 +277,14 @@ public class OpenmrsLocationService extends OpenmrsService {
 		List<Location> allLocationsList = new ArrayList<>();
 		allLocationsList = getAllLocations(allLocationsList,0);
 		String locationsJson = new Gson().toJson(allLocationsList);
-		logger.info(locationsJson);
+		logger.debug(locationsJson);
 		return getLocationsByLevelAndTagsFromAllLocationsList(uuid, allLocationsList,locationTopLevel,locationTagsQueried);
 	}
 
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
 		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
 				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display))&limit=100&startIndex="+startIndex);
-		logger.info("response received : {} ", response);
+		logger.debug("response received : {} ", response);
 		if (!StringUtils.isBlank(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
 			JSONArray results = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 			for (int i = 0; i < results.length(); i++) {
