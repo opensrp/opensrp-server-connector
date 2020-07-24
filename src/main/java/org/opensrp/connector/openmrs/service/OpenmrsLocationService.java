@@ -33,6 +33,8 @@ public class OpenmrsLocationService extends OpenmrsService {
 
 	private static final String LOCATION_URL = "ws/rest/v1/location";
 
+	private static final boolean addLocationAttributesToPayload = false;
+	
 	public OpenmrsLocationService() {
 	}
 
@@ -92,7 +94,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 			location.addTag(tags.getJSONObject(i).getString(ConnectorConstants.DISPLAY));
 		}
 
-		if(locationsJsonObject.has(ConnectorConstants.ATTRIBUTES)) {
+		if(addLocationAttributesToPayload && locationsJsonObject.has(ConnectorConstants.ATTRIBUTES)) {
 			JSONArray attributes = locationsJsonObject.getJSONArray(ConnectorConstants.ATTRIBUTES);
 			for (int i = 0; i < attributes.length(); i++) {
 				JSONObject attribute = attributes.getJSONObject(i);
