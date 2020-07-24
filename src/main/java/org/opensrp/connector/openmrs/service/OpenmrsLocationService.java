@@ -1,11 +1,14 @@
 package org.opensrp.connector.openmrs.service;
 
-import com.google.gson.Gson;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Credentials;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+import static org.opensrp.common.util.OpenMRSCrossVariables.TEAM_MEMBER_URL;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -21,10 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.*;
-
-import static org.opensrp.common.util.OpenMRSCrossVariables.TEAM_MEMBER_URL;
+import com.google.gson.Gson;
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Credentials;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 @Service
 public class OpenmrsLocationService extends OpenmrsService {
@@ -33,8 +38,6 @@ public class OpenmrsLocationService extends OpenmrsService {
 
 	private static final String LOCATION_URL = "ws/rest/v1/location";
 
-	private static final boolean addLocationAttributesToPayload = false;
-	
 	public OpenmrsLocationService() {
 	}
 
@@ -94,7 +97,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 			location.addTag(tags.getJSONObject(i).getString(ConnectorConstants.DISPLAY));
 		}
 
-		if(addLocationAttributesToPayload && locationsJsonObject.has(ConnectorConstants.ATTRIBUTES)) {
+		if(locationsJsonObject.has(ConnectorConstants.ATTRIBUTES)) {
 			JSONArray attributes = locationsJsonObject.getJSONArray(ConnectorConstants.ATTRIBUTES);
 			for (int i = 0; i < attributes.length(); i++) {
 				JSONObject attribute = attributes.getJSONObject(i);
@@ -280,7 +283,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
 		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
-				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display),attributes)&limit=100&startIndex="+startIndex);
+				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display))&limit=100&startIndex="+startIndex);
 		logger.info("response received : {} ", response);
 		if (!StringUtils.isBlank(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
 			JSONArray results = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
