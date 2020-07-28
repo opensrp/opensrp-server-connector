@@ -22,19 +22,18 @@ import com.google.gson.reflect.TypeToken;
 
 public class OpenmrsLocationTest extends TestResourceLoader {
 	
+	private FetchLocationsHelper fetchLocationsHelper;
+	
 	public OpenmrsLocationTest() throws IOException {
 		super();
-	}
-	
-	private OpenmrsLocationService ls;
-	
-	private FetchLocationsHelper fetchLocationsHelper;
+	} 
 	
 	@Before
 	public void setup() throws IOException {
 		
 		fetchLocationsHelper = Mockito.spy(FetchLocationsHelper.class);
-		ls = new OpenmrsLocationService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
+
+		OpenmrsLocationService ls = new OpenmrsLocationService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
 		Whitebox.setInternalState(ls, "fetchLocationsHelper", fetchLocationsHelper);
 	}
 	
@@ -78,6 +77,8 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		String locationTopLevel = "Council";
 		OpenmrsLocationService locationService = Mockito
 		        .spy(new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
+
+		Whitebox.setInternalState(locationService, "fetchLocationsHelper", fetchLocationsHelper);
 		
 		Mockito.doReturn(allLocations).when(fetchLocationsHelper).getAllOpenMRSlocations();
 		List<Location> councilFacilities = locationService.getLocationsByLevelAndTags("25820e25-76c5-455a-812d-0934db2564f5",
@@ -111,6 +112,9 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		OpenmrsLocationService locationService = Mockito
 		        .spy(new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
 		locationService.OPENMRS_VERSION = "2.1.4";
+
+		Whitebox.setInternalState(locationService, "fetchLocationsHelper", fetchLocationsHelper);
+		
 		Mockito.doReturn(
 		    "{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"name\":\"Kabila Village\",\"tags\":[{\"display\":\"Som display\"}],\"attributes\":[{\"voided\":false,\"display\":\"Another:Display\"}]}")
 		        .when(fetchLocationsHelper).getURL(Mockito.anyString());
