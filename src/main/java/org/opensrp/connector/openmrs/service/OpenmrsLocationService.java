@@ -274,7 +274,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	 * @return List of locations matching the specified tags
 	 * @throws JSONException
 	 */
-	@Cacheable("getLocationsByLevelAndTags")
+	@Cacheable(value="getLocationsByLevelAndTags", key="#uuid")
 	public List<Location> getLocationsByLevelAndTags(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
 		List<Location> allLocationsList = new ArrayList<>();
 		allLocationsList = getAllLocations(allLocationsList,0);
