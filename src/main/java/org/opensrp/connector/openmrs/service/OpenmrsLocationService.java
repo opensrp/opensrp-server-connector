@@ -22,6 +22,7 @@ import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -273,6 +274,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	 * @return List of locations matching the specified tags
 	 * @throws JSONException
 	 */
+	@Cacheable("getLocationsByLevelAndTags")
 	public List<Location> getLocationsByLevelAndTags(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
 		List<Location> allLocationsList = new ArrayList<>();
 		allLocationsList = getAllLocations(allLocationsList,0);
