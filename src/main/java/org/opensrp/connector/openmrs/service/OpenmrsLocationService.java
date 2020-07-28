@@ -22,7 +22,6 @@ import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
@@ -274,7 +273,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	 * @return List of locations matching the specified tags
 	 * @throws JSONException
 	 */
-	@Cacheable(value="getLocationsByLevelAndTags", key="#uuid")
+	//@Cacheable(value="getLocationsByLevelAndTags", key="#uuid")
 	public List<Location> getLocationsByLevelAndTags(String uuid, String locationTopLevel, JSONArray locationTagsQueried) throws JSONException {
 		List<Location> allLocationsList = new ArrayList<>();
 		allLocationsList = getAllLocations(allLocationsList,0);
@@ -284,19 +283,25 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
-		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL +
-				"?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display))&limit=100&startIndex="+startIndex);
+		String response = this.getURL(HttpUtil.removeEndingSlash(this.OPENMRS_BASE_URL) + "/" + LOCATION_URL
+		        + "?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display))&limit=100&startIndex="
+		        + startIndex);
 		logger.debug("response received : {} ", response);
-		if (!StringUtils.isBlank(response) && (new JSONObject(response)).has(ConnectorConstants.RESULTS)) {
+		
+		JSONObject jsonObject = new JSONObject(response);
+		
+		JSONArray links = jsonObject.getJSONArray("links");
+		
+		if (!StringUtils.isBlank(response) && jsonObject.has(ConnectorConstants.RESULTS)) {
 			JSONArray results = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 			for (int i = 0; i < results.length(); i++) {
 				locationList.add(makeLocation(results.getJSONObject(i)));
 			}
-			return getAllLocations(locationList,startIndex+100);
+			if (links.length() == 2 || links.getJSONObject(0).getString("rel").equals("next"))
+				return getAllLocations(locationList, startIndex + 100);
 		}
-		return  locationList;
+		return locationList;
 	}
-
 
 	/**
 	 * This method is used to obtain locations within a hierarchy level by passing the following parameters
