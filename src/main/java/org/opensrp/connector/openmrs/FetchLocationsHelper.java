@@ -43,6 +43,8 @@ public class FetchLocationsHelper extends OpenmrsService {
 		            + startIndex);
 		logger.debug("response received : {} ", response);
 		
+		logger.info(String.format("Location fetch starting at index %d ",startIndex));
+		
 		JSONObject jsonObject = new JSONObject(response);
 		JSONArray links = jsonObject.getJSONArray("links");
 		
