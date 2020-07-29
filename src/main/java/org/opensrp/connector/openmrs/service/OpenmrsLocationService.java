@@ -36,7 +36,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	@Autowired
 	public OpenmrsLocationService(FetchLocationsHelper fetchLocationsHelper) {
-		 this.fetchLocationsHelper= fetchLocationsHelper;
+		this.fetchLocationsHelper = fetchLocationsHelper;
 	}
 	
 	public OpenmrsLocationService(String openmrsUrl, String user, String password) {
@@ -339,5 +339,23 @@ public class OpenmrsLocationService extends OpenmrsService {
 			}
 		}
 		return locationsList;
+	}
+	
+	/**
+	 * Invokes helper method to clear all cached OpenMRS locations
+	 */
+	public void clearLocationsCache() {
+		
+		fetchLocationsHelper.clearAllOpenMRSlocationsCached();
+		
+	}
+	
+	/**
+	 * Invokes helper method to create a cache of all OpenMRS locations
+	 */
+	public void createLocationsCache() {
+		
+		fetchLocationsHelper.getAllOpenMRSlocations();
+		
 	}
 }

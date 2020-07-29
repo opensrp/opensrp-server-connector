@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -104,7 +105,7 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		assertEquals(locationsByTeamIds.length(), 1);
 		assertEquals(locationsByTeamIds.getJSONObject(0).getJSONArray("locations").getJSONObject(0).getString("display"),
 		    "Kabila Village");
-		assertEquals(0, locationService.getLocationsByTeamIds(Collections.emptyList()).length());
+		assertEquals(0, locationService.getLocationsByTeamIds(Arrays.asList(new String[] {})).length());
 	}
 	
 	@Test
@@ -122,5 +123,35 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		assertNotNull(location);
 		assertEquals(location.getName(), "Kabila Village");
 		assertEquals(location.getTags().size(), 1);
+	}
+	
+	@Test
+	public void clearLocationsCache() {
+	 
+		OpenmrsLocationService locationService = Mockito.spy(new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
+
+		Whitebox.setInternalState(locationService, "fetchLocationsHelper", fetchLocationsHelper);
+		
+		Mockito.doNothing().when(fetchLocationsHelper).clearAllOpenMRSlocationsCached();
+		
+		locationService.clearLocationsCache();
+		
+	    Mockito.verify(fetchLocationsHelper).clearAllOpenMRSlocationsCached(); 
+		
+	}
+	
+	@Test
+	public void createLocationsCache() {
+	 
+		OpenmrsLocationService locationService = Mockito.spy(new OpenmrsLocationService("http://localhost:8080/openmrs/", "someuser", "somepass"));
+
+		Whitebox.setInternalState(locationService, "fetchLocationsHelper", fetchLocationsHelper);
+		
+		Mockito.doReturn(null).when(fetchLocationsHelper).getAllOpenMRSlocations();
+		
+		locationService.createLocationsCache();
+		
+	    Mockito.verify(fetchLocationsHelper).getAllOpenMRSlocations(); 
+		
 	}
 }
