@@ -16,6 +16,7 @@ import org.opensrp.connector.openmrs.service.OpenmrsLocationService;
 import org.opensrp.connector.openmrs.service.OpenmrsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -28,12 +29,19 @@ import com.squareup.okhttp.Response;
 @Component
 public class FetchLocationsHelper extends OpenmrsService {
 	
-	private static Logger logger = LoggerFactory.getLogger(FetchLocationsHelper.class); 
+	private static Logger logger = LoggerFactory.getLogger(FetchLocationsHelper.class);
 	
-	@Cacheable("getAllOpenMRSlocations")
+	private static final String LOCATIONS_CACHE_NAME = "getAllOpenMRSlocations";
+	
+	@Cacheable(LOCATIONS_CACHE_NAME)
 	public synchronized List<Location> getAllOpenMRSlocations() {
 		List<Location> allLocationsList = new ArrayList<>();
 		return getAllLocations(allLocationsList, 0);
+	}
+	
+	@CacheEvict(value = LOCATIONS_CACHE_NAME, allEntries = true)
+	public synchronized void clearAllOpenMRSlocationsCached() {
+		logger.info(String.format("OpenMRS locations cache %s cleared...", LOCATIONS_CACHE_NAME));
 	}
 	
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
@@ -43,7 +51,7 @@ public class FetchLocationsHelper extends OpenmrsService {
 		            + startIndex);
 		logger.debug("response received : {} ", response);
 		
-		logger.info(String.format("Location fetch starting at index %d ",startIndex));
+		logger.info(String.format("Location fetch starting at index %d ", startIndex));
 		
 		JSONObject jsonObject = new JSONObject(response);
 		JSONArray links = jsonObject.getJSONArray("links");
@@ -103,8 +111,7 @@ public class FetchLocationsHelper extends OpenmrsService {
 		}
 		return null;
 	}
-
-
+	
 	public String getURL(String url) {
 		Request request = new Request.Builder().url(url)
 		        .addHeader("Authorization", Credentials.basic(OPENMRS_USER, OPENMRS_PWD)).build();
@@ -113,7 +120,7 @@ public class FetchLocationsHelper extends OpenmrsService {
 		Response response;
 		try {
 			response = call.execute();
-			String responseBody=response.body().string();
+			String responseBody = response.body().string();
 			if (!StringUtils.isBlank(responseBody)) {
 				return responseBody;
 			}
@@ -122,7 +129,7 @@ public class FetchLocationsHelper extends OpenmrsService {
 			logger.error(e.getMessage(), e);
 		}
 		return null;
-
+		
 	}
 	
 }
