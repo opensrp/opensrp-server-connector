@@ -182,7 +182,7 @@ public class DHIS2DatasetPush extends DHIS2Service {
 				try {
 					JSONObject dhis2DatasetToPush = this.createDHIS2Dataset(report);
 					if (dhis2DatasetToPush == null) {
-						return;
+						continue;
 					}
 					
 					JSONObject response = dhis2HttpUtils.post(DATAVALUESET_ENDPOINT, "", dhis2DatasetToPush.toString());
