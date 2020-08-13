@@ -111,7 +111,7 @@ public class OpenmrsSyncerListener {
 	
 	public JSONObject pushClient(long start) {
 		try {
-			List<Client> cl = clientService.findByServerVersion(start);
+			List<Client> cl = clientService.findByServerVersion(start, null);
 			logger.info("Clients list size " + cl.size());
 			JSONArray patientsJsonArray = new JSONArray();// only for test code purpose
 			JSONArray relationshipsArray = new JSONArray();// only for test code purpose

@@ -406,7 +406,7 @@ public class PatientService extends OpenmrsService {
 		if (jsonResponse.has("error")) {
 			JSONObject responseError = new JSONObject(jsonResponse.getString("error"));
 			if (responseError.has("message") && responseError.getString("message").equals("User is not logged in")) {
-				be.setServerVersion(null);
+				be.setServerVersion(0L);
 				clientService.updateClient(be);
 			}
 		}
