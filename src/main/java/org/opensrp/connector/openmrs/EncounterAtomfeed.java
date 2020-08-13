@@ -89,7 +89,7 @@ public class EncounterAtomfeed extends OpenmrsService implements EventWorker, At
 			org.smartregister.domain.Event existing = eventService.find(encounter.getString("uuid"));
 			if (existing == null) {
 				log.info("New Event");
-				eventService.addEvent(enc);
+				eventService.addEvent(enc, enc.getProviderId());
 			} else {
 				log.info("Update existing Event");
 				enc = eventService.mergeEvent(enc);

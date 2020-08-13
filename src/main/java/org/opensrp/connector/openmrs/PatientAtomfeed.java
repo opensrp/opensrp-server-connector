@@ -3,11 +3,7 @@ package org.opensrp.connector.openmrs;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,10 +25,10 @@ import org.opensrp.connector.atomfeed.AtomfeedService;
 import org.opensrp.connector.openmrs.constants.OpenmrsConstants;
 import org.opensrp.connector.openmrs.service.OpenmrsService;
 import org.opensrp.connector.openmrs.service.PatientService;
-import org.smartregister.domain.Client;
-import org.smartregister.domain.Obs;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
+import org.smartregister.domain.Client;
+import org.smartregister.domain.Obs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -217,7 +213,7 @@ public class PatientAtomfeed extends OpenmrsService implements EventWorker, Atom
 			}
 			
 			if (emptyUpdateBirthRegEvent != null) {
-				emptyUpdateBirthRegEvent.setServerVersion(null);
+				emptyUpdateBirthRegEvent.setServerVersion(0L);
 				eventService.updateEvent(emptyUpdateBirthRegEvent);
 			} else {
 				
@@ -250,7 +246,7 @@ public class PatientAtomfeed extends OpenmrsService implements EventWorker, Atom
 				
 				event.setObs(obses);
 				
-				eventService.addEvent(event);
+				eventService.addEvent(event, event.getProviderId());
 			}
 			
 		}
