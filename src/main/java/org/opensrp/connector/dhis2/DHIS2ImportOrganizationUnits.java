@@ -71,6 +71,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 					pager = root.getJSONObject("pager");
 				} else {
 					isJobRunning = Boolean.FALSE;
+					updateDHISLocationJobStatus("Completed");
 					break;
 				}
 			}
@@ -79,7 +80,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		catch (Exception e) {
 			isJobRunning = Boolean.FALSE;
 			isJobFailed = Boolean.TRUE;
-			updateDHISLocationJobStatusAsFailed();
+			updateDHISLocationJobStatus("Failed");
 			logger.error("Exception occurred in importing DHIS locations : " + e.getMessage());
 		}
 
@@ -181,16 +182,19 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 			Date openingDate = parseDhisDate(openingDateInString);
 			locationProperty.setEffectiveStartDate(openingDate);
 		}
+		Date endDate = null;
 		if (oudet.has(ORG_UNIT_CLOSING_DATE_KEY)) {
 			String endDateInString = (String) oudet.get(ORG_UNIT_CLOSING_DATE_KEY);
-			Date endDate = parseDhisDate(endDateInString);
+			endDate = parseDhisDate(endDateInString);
 			locationProperty.setEffectiveEndDate(endDate);
-			if (endDate != null) {
-				locationProperty.setStatus(LocationProperty.PropertyStatus.INACTIVE);
-			} else {
-				locationProperty.setStatus(LocationProperty.PropertyStatus.ACTIVE);
-			}
 		}
+
+		if (endDate != null) {
+			locationProperty.setStatus(LocationProperty.PropertyStatus.INACTIVE);
+		} else {
+			locationProperty.setStatus(LocationProperty.PropertyStatus.ACTIVE);
+		}
+
 		Map<String, String> customProperties = locationProperty.getCustomProperties();
 		if (customProperties == null) {
 			customProperties = new HashMap<>();
@@ -315,9 +319,16 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		}
 	}
 
-	private void updateDHISLocationJobStatusAsFailed() {
-		AppStateToken dhisLocationJobStatus = new AppStateToken("DHIS-LOCATIONS-JOB-STATUS",
-				DHISImportLocationsJobStatus.FAILED.name(), new Date().getTime());
+	private void updateDHISLocationJobStatus(String status) {
+		AppStateToken dhisLocationJobStatus = null;
+		if (status.equals("Failed")) {
+			dhisLocationJobStatus = new AppStateToken("DHIS-LOCATIONS-JOB-STATUS",
+					DHISImportLocationsJobStatus.FAILED.name(), new Date().getTime());
+		} else if (status.equals("Completed")) {
+			dhisLocationJobStatus = new AppStateToken("DHIS-LOCATIONS-JOB-STATUS",
+					DHISImportLocationsJobStatus.COMPLETED.name(), new Date().getTime());
+		}
+
 		if (allAppStateTokens.findByName("DHIS-LOCATIONS-JOB-STATUS").size() > 0) {
 			allAppStateTokens.update(dhisLocationJobStatus);
 		} else {
