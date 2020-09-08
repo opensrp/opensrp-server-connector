@@ -5,14 +5,16 @@ import com.google.gson.JsonArray;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.opensrp.domain.AppStateToken;
+import org.opensrp.repository.AppStateTokensRepository;
 import org.opensrp.service.LocationTagService;
 import org.opensrp.service.PhysicalLocationService;
+import org.slf4j.LoggerFactory;
 import org.smartregister.domain.Geometry;
 import org.smartregister.domain.LocationProperty;
 import org.smartregister.domain.LocationTag;
 import org.smartregister.domain.PhysicalLocation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,7 @@ import static org.opensrp.connector.dhis2.Dhis2EndPoints.*;
 @Component
 public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
-	protected Dhis2HttpUtils dhis2HttpUtils;
+	private final AppStateTokensRepository allAppStateTokens;
 
 	@Autowired
 	private PhysicalLocationService physicalLocationService;
@@ -38,46 +40,54 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
 	private Gson gson = new Gson();
 
-	@Autowired
-	public DHIS2ImportOrganizationUnits(@Value("#{opensrp['dhis2.url']}") String dhis2Url,
-			@Value("#{opensrp['dhis2.username']}") String user, @Value("#{opensrp['dhis2.password']}") String password) {
-		super(dhis2Url, user, password);
-		dhis2HttpUtils = new Dhis2HttpUtils(dhis2Url, user, password);
+	private Integer rowsProcessed = 0;
+
+	private Boolean isJobRunning = false;
+
+	private Boolean isJobFailed = false;
+
+	private static org.slf4j.Logger logger = LoggerFactory.getLogger(DHIS2ImportOrganizationUnits.class.toString());
+
+	public DHIS2ImportOrganizationUnits(AppStateTokensRepository allAppStateTokens) {
+		this.allAppStateTokens = allAppStateTokens;
 	}
 
-	//	@Async
-	public String importOrganizationUnits(String startPage) {
+	@Async
+	public void importOrganizationUnits(String startPage) {
 
 		try {
 			JSONObject root = getOrganisationalUnitList(Integer.parseInt(startPage));
 			JSONObject pager = (JSONObject) root.get("pager");
 
 			while (true) {
+				isJobRunning = Boolean.TRUE;
 				JSONArray orgUnits = (JSONArray) root.get(DHIS2Constants.ORG_UNIT_KEY);
-
 				for (int i = 0; i < orgUnits.length(); i++) {
-					createOrUpdatePhysicalLocation(orgUnits.getJSONObject(i));
+					createOrUpdatePhysicalLocation(orgUnits.getJSONObject(i), pager);
 				}
 
 				if (pager.has(ORG_UNIT_NEXT_PAGE_KEY)) {
 					root = getOrganisationalUnitList(Integer.parseInt(pager.get(ORG_UNIT_PAGE_KEY).toString() + 1));
 					pager = root.getJSONObject("pager");
 				} else {
+					isJobRunning = Boolean.FALSE;
 					break;
 				}
 			}
-			return "";
 		}
 
-		catch (IOException | ParseException e) {
-			e.printStackTrace();
-			return "";
+		catch (Exception e) {
+			isJobRunning = Boolean.FALSE;
+			isJobFailed = Boolean.TRUE;
+			updateDHISLocationJobStatusAsFailed();
+			logger.error("Exception occurred in importing DHIS locations : " + e.getMessage());
 		}
 
 	}
 
-	private void createOrUpdatePhysicalLocation(JSONObject ou) throws MalformedURLException, IOException, ParseException {
-
+	private void createOrUpdatePhysicalLocation(JSONObject ou, JSONObject pager)
+			throws IOException, ParseException {
+		rowsProcessed++;
 		String orgUnitId = (String) ou.get(ORG_UNIT_ID_KEY);
 
 		PhysicalLocation l = null;
@@ -86,14 +96,14 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		System.out.println("Processing OU :: " + ou);
 		JSONObject oudet = getOrganisationalUnit(orgUnitId);
 
-		String locationName = (String) oudet.get(ORG_UNIT_NAME_KEY);
-		//find by name
-
 		// if still null create a new one
 		if (l == null) {
 			l = new PhysicalLocation();
 		}
 		PhysicalLocation physicalLocation = convertAndPersistPhysicalLocation(oudet, l);
+		if (physicalLocation != null) {
+			updateOrCreateAppStateTokens(pager);
+		}
 	}
 
 	public PhysicalLocation convertAndPersistPhysicalLocation(JSONObject oudet, PhysicalLocation l)
@@ -205,6 +215,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
 		if (oudet.has(ORG_UNIT_ID_KEY)) {
 			String idval = (String) oudet.get(ORG_UNIT_ID_KEY);
+			System.out.println("ID is : " + idval);
 			if (idval != null) {
 				l.setId(idval);
 			}
@@ -223,7 +234,12 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 			geometry.setCoordinates(jsonArrayOfCordinates);
 
 			String type = geometryValue.getString(ORG_UNIT_FEATURE_TYPE_KEY);
-			geometry.setType(Geometry.GeometryType.valueOf(StringUtils.upperCase(type)));
+			System.out.println("type is  : " + type);
+			if (type.equals("MultiPolygon")) {
+				geometry.setType(Geometry.GeometryType.MULTI_POLYGON);
+			} else {
+				geometry.setType(Geometry.GeometryType.valueOf(StringUtils.upperCase(type)));
+			}
 			l.setGeometry(geometry);
 		}
 
@@ -243,5 +259,69 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		ltag.setId(0l);
 		ltag.setName(tagName);
 		return locationTagService.addOrUpdateLocationTag(ltag);
+	}
+
+	private void updateOrCreateAppStateTokens(JSONObject pager) {
+
+		AppStateToken dhisLastSyncPageToken;
+		AppStateToken dhisRowsProcessed;
+		AppStateToken pageCountToken;
+		AppStateToken totalLocationsToken;
+		AppStateToken dhisLocationJobStatus;
+
+		Integer pageCount = (Integer) pager.get("pageCount");
+		Integer totalLocations = (Integer) pager.get("total");
+		DHISImportLocationsJobStatus dhisImportLocationsJobStatus =
+				isJobRunning && !isJobFailed ? DHISImportLocationsJobStatus.RUNNING :
+						!isJobRunning && !isJobFailed ?
+								DHISImportLocationsJobStatus.COMPLETED :
+								DHISImportLocationsJobStatus.FAILED;
+
+		dhisLastSyncPageToken = new AppStateToken("DHIS2-LAST-SYNC-PAGE", pager.get("page"), new Date().getTime());
+		if (allAppStateTokens.findByName("DHIS2-LAST-SYNC-PAGE").size() > 0) {
+			allAppStateTokens.update(dhisLastSyncPageToken);
+		} else {
+			allAppStateTokens.add(dhisLastSyncPageToken);
+		}
+		//
+
+		dhisRowsProcessed = new AppStateToken("DHIS2-LOCATION-ROWS-PROCESSED", rowsProcessed, new Date().getTime());
+		if (allAppStateTokens.findByName("DHIS2-LOCATION-ROWS-PROCESSED").size() > 0) {
+			allAppStateTokens.update(dhisRowsProcessed);
+		} else {
+			allAppStateTokens.add(dhisRowsProcessed);
+		}
+
+		pageCountToken = new AppStateToken("DHIS-PAGE-COUNT", pageCount, new Date().getTime());
+		if (allAppStateTokens.findByName("DHIS-PAGE-COUNT").size() > 0) {
+			allAppStateTokens.update(pageCountToken);
+		} else {
+			allAppStateTokens.add(pageCountToken);
+		}
+
+		totalLocationsToken = new AppStateToken("TOTAL-LOCATIONS", totalLocations, new Date().getTime());
+		if (allAppStateTokens.findByName("TOTAL-LOCATIONS").size() > 0) {
+			allAppStateTokens.update(totalLocationsToken);
+		} else {
+			allAppStateTokens.add(totalLocationsToken);
+		}
+
+		dhisLocationJobStatus = new AppStateToken("DHIS-LOCATIONS-JOB-STATUS",
+				dhisImportLocationsJobStatus != null ? dhisImportLocationsJobStatus.name() : null, new Date().getTime());
+		if (allAppStateTokens.findByName("DHIS-LOCATIONS-JOB-STATUS").size() > 0) {
+			allAppStateTokens.update(dhisLocationJobStatus);
+		} else {
+			allAppStateTokens.add(dhisLocationJobStatus);
+		}
+	}
+
+	private void updateDHISLocationJobStatusAsFailed() {
+		AppStateToken dhisLocationJobStatus = new AppStateToken("DHIS-LOCATIONS-JOB-STATUS",
+				DHISImportLocationsJobStatus.FAILED.name(), new Date().getTime());
+		if (allAppStateTokens.findByName("DHIS-LOCATIONS-JOB-STATUS").size() > 0) {
+			allAppStateTokens.update(dhisLocationJobStatus);
+		} else {
+			allAppStateTokens.add(dhisLocationJobStatus);
+		}
 	}
 }
