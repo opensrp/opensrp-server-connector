@@ -32,8 +32,8 @@ public class DHIS2ImportLocationsStatusService {
 
 		dhis2LocationsImportSummary.setLastPageSynced(Integer.parseInt((String) dhisLastSyncPageToken.getValue()));
 		dhis2LocationsImportSummary.setNumberOfRowsProcessed(Integer.parseInt((String) dhisRowsProcessed.getValue()));
-		dhis2LocationsImportSummary.setDHISPageCount(Integer.parseInt((String) pageCountToken.getValue()));
-		dhis2LocationsImportSummary.setDHISLocationsCount(Integer.parseInt((String) totalLocationsToken.getValue()));
+		dhis2LocationsImportSummary.setDhisPageCount(Integer.parseInt((String) pageCountToken.getValue()));
+		dhis2LocationsImportSummary.setDhisLocationsCount(Integer.parseInt((String) totalLocationsToken.getValue()));
 		dhis2LocationsImportSummary.setDhisImportLocationsJobStatus(dhisLocationJobStatus.getValue() != null ?
 				DHISImportLocationsJobStatus.get((String) dhisLocationJobStatus.getValue()) : null);
 

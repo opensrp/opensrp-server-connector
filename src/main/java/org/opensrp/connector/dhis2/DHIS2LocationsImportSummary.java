@@ -6,9 +6,9 @@ public class DHIS2LocationsImportSummary {
 
 	private Integer numberOfRowsProcessed;
 
-	private Integer DHISPageCount;
+	private Integer dhisPageCount;
 
-	private Integer DHISLocationsCount;
+	private Integer dhisLocationsCount;
 
 	private DHISImportLocationsJobStatus dhisImportLocationsJobStatus;
 
@@ -28,20 +28,20 @@ public class DHIS2LocationsImportSummary {
 		this.numberOfRowsProcessed = numberOfRowsProcessed;
 	}
 
-	public Integer getDHISPageCount() {
-		return DHISPageCount;
+	public Integer getDhisPageCount() {
+		return dhisPageCount;
 	}
 
-	public void setDHISPageCount(Integer DHISPageCount) {
-		this.DHISPageCount = DHISPageCount;
+	public void setDhisPageCount(Integer dhisPageCount) {
+		this.dhisPageCount = dhisPageCount;
 	}
 
-	public Integer getDHISLocationsCount() {
-		return DHISLocationsCount;
+	public Integer getDhisLocationsCount() {
+		return dhisLocationsCount;
 	}
 
-	public void setDHISLocationsCount(Integer DHISLocationsCount) {
-		this.DHISLocationsCount = DHISLocationsCount;
+	public void setDhisLocationsCount(Integer dhisLocationsCount) {
+		this.dhisLocationsCount = dhisLocationsCount;
 	}
 
 	public DHISImportLocationsJobStatus getDhisImportLocationsJobStatus() {

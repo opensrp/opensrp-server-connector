@@ -19,7 +19,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.*;
 
@@ -61,13 +60,15 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
 			while (true) {
 				isJobRunning = Boolean.TRUE;
-				JSONArray orgUnits = (JSONArray) root.get(DHIS2Constants.ORG_UNIT_KEY);
+				JSONArray orgUnits = (JSONArray) root.get(ORG_UNIT_KEY);
 				for (int i = 0; i < orgUnits.length(); i++) {
-					createOrUpdatePhysicalLocation(orgUnits.getJSONObject(i), pager);
+				createOrUpdatePhysicalLocation(orgUnits.getJSONObject(i), pager);
 				}
 
 				if (pager.has(ORG_UNIT_NEXT_PAGE_KEY)) {
-					root = getOrganisationalUnitList(Integer.parseInt(pager.get(ORG_UNIT_PAGE_KEY).toString() + 1));
+					Integer currentPageNumber = (Integer) pager.get(ORG_UNIT_PAGE_KEY);
+					System.out.println("Going to page number  : " + currentPageNumber + 1);
+					root = getOrganisationalUnitList(currentPageNumber + 1);
 					pager = root.getJSONObject("pager");
 				} else {
 					isJobRunning = Boolean.FALSE;
@@ -109,7 +110,6 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
 	public PhysicalLocation convertAndPersistPhysicalLocation(JSONObject oudet, PhysicalLocation l)
 			throws IOException, ParseException {
-		PhysicalLocation physicalLocation = null;
 
 		Set<LocationTag> dTagList = new HashSet<>();
 		if (l.getLocationTags() != null && !l.getLocationTags().isEmpty()) {
@@ -226,26 +226,31 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		}
 
 		Geometry geometry = l.getGeometry();
+		JsonArray jsonArrayOfCordinates = new JsonArray();
+		String type;
 		if (geometry == null) {
 			geometry = new Geometry();
+			geometry.setCoordinates(jsonArrayOfCordinates);
+			geometry.setType(null);
 		}
 
 		if (oudet.has(ORG_UNIT_GEOMETRY_KEY)) {
 			JSONObject geometryValue = (JSONObject) oudet.get(ORG_UNIT_GEOMETRY_KEY);
 			JSONArray cordinates = (JSONArray) geometryValue.get(ORG_UNIT_CORDINATES_KEY);
 			String cordinatesArray = cordinates.toString();
-			JsonArray jsonArrayOfCordinates = gson.fromJson(cordinatesArray, JsonArray.class);
+			jsonArrayOfCordinates = gson.fromJson(cordinatesArray, JsonArray.class);
 			geometry.setCoordinates(jsonArrayOfCordinates);
-
-			String type = geometryValue.getString(ORG_UNIT_FEATURE_TYPE_KEY);
+			type = geometryValue.getString(ORG_UNIT_FEATURE_TYPE_KEY);
 			System.out.println("type is  : " + type);
 			if (type.equals("MultiPolygon")) {
 				geometry.setType(Geometry.GeometryType.MULTI_POLYGON);
 			} else {
 				geometry.setType(Geometry.GeometryType.valueOf(StringUtils.upperCase(type)));
 			}
-			l.setGeometry(geometry);
+
 		}
+
+		l.setGeometry(geometry);
 
 		l.setJurisdiction(Boolean.TRUE);
 		physicalLocationService.addOrUpdate(l);
