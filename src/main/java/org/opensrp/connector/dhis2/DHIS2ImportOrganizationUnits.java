@@ -20,7 +20,30 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static org.opensrp.connector.dhis2.DHIS2Constants.*;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_PAGER_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_PAGE_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_NEXT_PAGE_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ORG_GROUP_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ORG_GROUP_ID_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ID_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ORG_GROUP_NAME_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_CODE_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_NAME_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_PARENT_ID_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_LEVEL_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_FEATURE_TYPE_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_CORDINATES_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ANCESTORS_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_OPENING_DATE_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_CLOSING_DATE_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_GEOMETRY_KEY;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
+
 import static org.opensrp.connector.dhis2.DHISUtils.parseDhisDate;
 
 @Component

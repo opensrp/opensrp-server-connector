@@ -5,6 +5,13 @@ import org.opensrp.repository.AppStateTokensRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
+
+
 @Service
 public class DHIS2ImportLocationsStatusService {
 
@@ -17,20 +24,12 @@ public class DHIS2ImportLocationsStatusService {
 
 	public DHIS2LocationsImportSummary getSummaryOfDHISImportsFromAppStateTokens() {
 		DHIS2LocationsImportSummary dhis2LocationsImportSummary = new DHIS2LocationsImportSummary();
-		AppStateToken dhisLastSyncPageToken = allAppStateTokens.findByName("DHIS2-LAST-SYNC-PAGE") != null ?
-				allAppStateTokens.findByName("DHIS2-LAST-SYNC-PAGE").get(0) : null;
 
-		AppStateToken dhisRowsProcessed = allAppStateTokens.findByName("DHIS2-LOCATION-ROWS-PROCESSED") != null ?
-				allAppStateTokens.findByName("DHIS2-LOCATION-ROWS-PROCESSED").get(0) : null;
-
-		AppStateToken pageCountToken = allAppStateTokens.findByName("DHIS-PAGE-COUNT") != null ?
-				allAppStateTokens.findByName("DHIS-PAGE-COUNT").get(0) : null;
-
-		AppStateToken totalLocationsToken = allAppStateTokens.findByName("TOTAL-LOCATIONS") != null ?
-				allAppStateTokens.findByName("TOTAL-LOCATIONS").get(0) : null;
-
-		AppStateToken dhisLocationJobStatus = allAppStateTokens.findByName("DHIS-LOCATIONS-JOB-STATUS") != null ?
-				allAppStateTokens.findByName("DHIS-LOCATIONS-JOB-STATUS").get(0) : null;
+		AppStateToken dhisLastSyncPageToken = findByName(DHIS2_LAST_PAGE_SYNC_TOKEN_NAME);
+		AppStateToken dhisRowsProcessed = findByName(DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME);
+		AppStateToken pageCountToken = findByName(DHIS_PAGE_COUNT_TOKEN_NAME);
+		AppStateToken totalLocationsToken = findByName(TOTAL_LOCATIONS_TOKEN_NAME);
+		AppStateToken dhisLocationJobStatus = findByName(DHIS_LOCATION_JOB_STATUS_TOKEN_NAME);
 
 		dhis2LocationsImportSummary.setLastPageSynced(dhisLastSyncPageToken != null ? Integer.parseInt((String) dhisLastSyncPageToken.getValue()) : null);
 		dhis2LocationsImportSummary.setNumberOfRowsProcessed(dhisRowsProcessed != null ? Integer.parseInt((String) dhisRowsProcessed.getValue()) : null);
@@ -41,5 +40,10 @@ public class DHIS2ImportLocationsStatusService {
 
 		return dhis2LocationsImportSummary;
 
+	}
+
+	private AppStateToken findByName(String tokenName) {
+		return allAppStateTokens.findByName(tokenName) != null ?
+				allAppStateTokens.findByName(tokenName).get(0) : null;
 	}
 }
