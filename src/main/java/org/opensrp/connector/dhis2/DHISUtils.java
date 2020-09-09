@@ -9,9 +9,9 @@ public class DHISUtils {
 	public static Date parseDhisDate(String date) throws ParseException {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		date = date.replaceFirst("T", " ");
+		String updatedDate = date.replaceFirst("T", " ");
 		try{
-			return sdf.parse(date);
+			return sdf.parse(updatedDate);
 		}
 		catch(ParseException e){
 			sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
