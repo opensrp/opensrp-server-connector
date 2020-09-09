@@ -90,9 +90,10 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 				}
 
 				if (pager.has(ORG_UNIT_NEXT_PAGE_KEY)) {
-					Integer currentPageNumber = pager.getInt(ORG_UNIT_PAGE_KEY);
-					logger.info("Going to page number  : " + currentPageNumber + 1);
-					root = dhis2EndPoints.getOrganisationalUnitList(currentPageNumber + 1);
+					Integer currentPageNumber = pager.optInt(ORG_UNIT_PAGE_KEY);
+					Integer nextPageNumber = currentPageNumber + 1;
+					logger.info("Going to page number  : " + nextPageNumber);
+					root = dhis2EndPoints.getOrganisationalUnitList(nextPageNumber);
 					pager = root.getJSONObject(ORG_UNIT_PAGER_KEY);
 				} else {
 					isJobRunning = Boolean.FALSE;
