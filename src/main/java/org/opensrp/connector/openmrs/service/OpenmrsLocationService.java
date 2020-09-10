@@ -18,6 +18,7 @@ import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
 import org.opensrp.api.util.TreeNode;
 import org.opensrp.common.util.HttpUtil;
+import org.opensrp.connector.HttpUtils;
 import org.opensrp.connector.openmrs.FetchLocationsHelper;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	}
 	
 	public Location getLocation(String locationIdOrName) throws JSONException {
-		String response = fetchLocationsHelper.getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
 		if (!StringUtils.isBlank(response) && (new JSONObject(response).has(ConnectorConstants.UUID))) {
 			return fetchLocationsHelper.makeLocation(response);
@@ -53,10 +54,13 @@ public class OpenmrsLocationService extends OpenmrsService {
 		return null;
 	}
 	
+	private String getURL(String url){
+		return HttpUtils.getURL(url, OPENMRS_USER, OPENMRS_PWD);
+	}
+	
 	public LocationTree getLocationTree() throws JSONException {
 		LocationTree ltr = new LocationTree();
-		String response = fetchLocationsHelper
-		        .getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "?v=full");
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "?v=full");
 		
 		JSONArray res = new JSONObject(response).getJSONArray(ConnectorConstants.RESULTS);
 		if (res.length() == 0) {
@@ -103,7 +107,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	private String fillTreeWithHierarchy(LocationTree ltr, String locationIdOrName) throws JSONException {
 		
-		String response = fetchLocationsHelper.getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationIdOrName.replaceAll(" ", "%20")) + "?v=full");
 		
 		JSONObject lo = new JSONObject(response);
@@ -124,7 +128,7 @@ public class OpenmrsLocationService extends OpenmrsService {
 	
 	private void fillTreeWithUpperHierarchy(LocationTree ltr, String locationId) throws JSONException {
 		
-		String response = fetchLocationsHelper.getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
+		String response = getURL(HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + LOCATION_URL + "/"
 		        + (locationId.replaceAll(" ", "%20")) + "?v=full");
 		
 		Location l = fetchLocationsHelper.makeLocation(response);
