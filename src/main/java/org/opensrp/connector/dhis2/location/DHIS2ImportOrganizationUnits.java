@@ -1,10 +1,11 @@
-package org.opensrp.connector.dhis2;
+package org.opensrp.connector.dhis2.location;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.opensrp.connector.dhis2.DHIS2Service;
 import org.opensrp.domain.AppStateToken;
 import org.opensrp.repository.AppStateTokensRepository;
 import org.opensrp.service.LocationTagService;
@@ -20,31 +21,30 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_PAGER_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_PAGE_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_NEXT_PAGE_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ORG_GROUP_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ORG_GROUP_ID_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ID_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ORG_GROUP_NAME_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_CODE_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_NAME_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_PARENT_ID_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_LEVEL_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_FEATURE_TYPE_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_CORDINATES_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_ANCESTORS_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_OPENING_DATE_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_CLOSING_DATE_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_GEOMETRY_KEY;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
-
-import static org.opensrp.connector.dhis2.DHISUtils.parseDhisDate;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_ANCESTORS_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_CLOSING_DATE_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_CODE_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_CORDINATES_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_FEATURE_TYPE_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_GEOMETRY_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_ID_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_LEVEL_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_NAME_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_NEXT_PAGE_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_OPENING_DATE_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_ORG_GROUP_ID_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_ORG_GROUP_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_ORG_GROUP_NAME_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_PAGER_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_PAGE_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_PARENT_ID_KEY;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHISUtils.parseDhisDate;
 
 @Component
 public class DHIS2ImportOrganizationUnits extends DHIS2Service {

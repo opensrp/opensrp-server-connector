@@ -1,15 +1,15 @@
-package org.opensrp.connector.dhis2;
+package org.opensrp.connector.dhis2.location;
+
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
 
 import org.opensrp.domain.AppStateToken;
 import org.opensrp.repository.AppStateTokensRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
-import static org.opensrp.connector.dhis2.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
 
 
 @Service

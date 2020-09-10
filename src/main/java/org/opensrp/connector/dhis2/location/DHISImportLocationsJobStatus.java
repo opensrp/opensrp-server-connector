@@ -1,4 +1,4 @@
-package org.opensrp.connector.dhis2;
+package org.opensrp.connector.dhis2.location;
 
 public enum DHISImportLocationsJobStatus {
 

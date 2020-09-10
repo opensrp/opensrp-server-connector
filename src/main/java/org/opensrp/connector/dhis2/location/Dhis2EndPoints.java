@@ -1,11 +1,13 @@
-package org.opensrp.connector.dhis2;
+package org.opensrp.connector.dhis2.location;
+
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.ORG_UNIT_GROUP_LIST_URL;
 
 import org.json.JSONObject;
+import org.opensrp.connector.dhis2.DHIS2Service;
+import org.opensrp.connector.dhis2.Dhis2HttpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import static org.opensrp.connector.dhis2.DHIS2Constants.ORG_UNIT_GROUP_LIST_URL;
 
 @Component
 public class Dhis2EndPoints extends DHIS2Service{

@@ -1,4 +1,4 @@
-package org.opensrp.connector.dhis2;
+package org.opensrp.connector.dhis2.location;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
