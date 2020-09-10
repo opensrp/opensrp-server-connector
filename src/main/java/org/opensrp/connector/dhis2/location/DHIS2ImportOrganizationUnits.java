@@ -282,6 +282,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		LocationTag ltag = new LocationTag();
 		ltag.setId(0l);
 		ltag.setName(tagName);
+		ltag.setActive(true);
 		return locationTagService.addOrUpdateLocationTag(ltag);
 	}
 
