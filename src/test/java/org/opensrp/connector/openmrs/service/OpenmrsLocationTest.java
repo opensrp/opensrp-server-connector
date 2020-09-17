@@ -118,7 +118,7 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		
 		Mockito.doReturn(
 		    "{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"name\":\"Kabila Village\",\"tags\":[{\"display\":\"Som display\"}],\"attributes\":[{\"voided\":false,\"display\":\"Another:Display\"}]}")
-		        .when(fetchLocationsHelper).getURL(Mockito.anyString());
+		        .when(fetchLocationsHelper).getURL();
 		Location location = locationService.getLocation("2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8");
 		assertNotNull(location);
 		assertEquals(location.getName(), "Kabila Village");
