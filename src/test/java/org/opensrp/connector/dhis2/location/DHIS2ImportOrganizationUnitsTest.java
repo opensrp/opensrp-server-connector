@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.opensrp.connector.openmrs.service.TestResourceLoader;
+import org.opensrp.domain.AppStateToken;
 import org.opensrp.repository.AppStateTokensRepository;
 import org.opensrp.service.LocationTagService;
 import org.opensrp.service.PhysicalLocationService;
@@ -49,27 +50,37 @@ public class DHIS2ImportOrganizationUnitsTest extends TestResourceLoader {
 
 	@Test
 	public void testImportOrganizationUnits() {
-		JSONObject apiResponse = new JSONObject();
-		JSONObject pager = new JSONObject();
-
-		pager.put("page", 1);
-		pager.put("pageCount", 1);
-		pager.put("total", 1);
-		pager.put("pageSize", 50);
-
-		JSONArray organisationUnits = new JSONArray();
-
-		JSONObject hia2Report = new JSONObject();
-
-		hia2Report.put("id", 1);
-		hia2Report.put("displayName", "HIA2");
-
-		organisationUnits.put(hia2Report);
-
-		apiResponse.put("pager", pager);
-		apiResponse.put("organisationUnits", organisationUnits);
+		JSONObject apiResponse = createOrganisationUnitObject();
 
 		PhysicalLocation physicalLocation = createPhysicalLocation();
+	    JSONObject organisationUnitDetails = createOrganisationUnitDetailsObject();
+
+		JSONObject organisationUnitGroupObject = new JSONObject();
+		organisationUnitGroupObject.put("name", "org-unit-group");
+
+		LocationTag locationTag = new LocationTag();
+		locationTag.setName("test-loc-tag");
+		ArrayList<LocationTag> locationTags = new ArrayList<>();
+		locationTags.add(locationTag);
+
+		when(dhis2EndPoints.getOrganisationalUnitList(anyInt())).thenReturn(apiResponse);
+		when(physicalLocationService.getLocation(anyString(),anyBoolean())).thenReturn(physicalLocation);
+		when(dhis2EndPoints.getOrganisationalUnit(anyString())).thenReturn(organisationUnitDetails);
+		when(dhis2EndPoints.getOrganisationalUnitGroup(anyString())).thenReturn(organisationUnitGroupObject);
+		doNothing().when(allAppStateTokens).add(any(AppStateToken.class));
+		when(locationTagService.getAllLocationTags()).thenReturn(locationTags);
+		when(locationTagService.addOrUpdateLocationTag(any(LocationTag.class))).thenReturn(locationTag);
+		dhis2ImportOrganizationUnits.importOrganizationUnits("1");
+		verify(physicalLocationService).addOrUpdate(any(PhysicalLocation.class));
+	}
+
+	private PhysicalLocation createPhysicalLocation() {
+		PhysicalLocation physicalLocation = new PhysicalLocation();
+		physicalLocation.setJurisdiction(true);
+		return physicalLocation;
+	}
+
+	private JSONObject createOrganisationUnitDetailsObject() {
 		JSONObject organisationUnitDetails = new JSONObject();
 		JSONArray organisationUnitGroups = new JSONArray();
 		JSONObject organisationUnitGroup = new JSONObject();
@@ -90,28 +101,35 @@ public class DHIS2ImportOrganizationUnitsTest extends TestResourceLoader {
 		ancestors.put(ancestor);
 		organisationUnitDetails.put("ancestors", ancestors);
 		organisationUnitDetails.put("id", "org-unit-1");
-
-		JSONObject organisationUnitGroupObject = new JSONObject();
-		organisationUnitGroupObject.put("name", "org-unit-group");
-
-		LocationTag locationTag = new LocationTag();
-		locationTag.setName("test-loc-tag");
-		ArrayList<LocationTag> locationTags = new ArrayList<>();
-		locationTags.add(locationTag);
-
-		when(dhis2EndPoints.getOrganisationalUnitList(anyInt())).thenReturn(apiResponse);
-		when(physicalLocationService.getLocation(anyString(),anyBoolean())).thenReturn(physicalLocation);
-		when(dhis2EndPoints.getOrganisationalUnit(anyString())).thenReturn(organisationUnitDetails);
-		when(dhis2EndPoints.getOrganisationalUnitGroup(anyString())).thenReturn(organisationUnitGroupObject);
-		when(locationTagService.getAllLocationTags()).thenReturn(locationTags);
-		when(locationTagService.addOrUpdateLocationTag(any(LocationTag.class))).thenReturn(locationTag);
-		dhis2ImportOrganizationUnits.importOrganizationUnits("1");
-		verify(physicalLocationService).addOrUpdate(any(PhysicalLocation.class));
+		JSONObject geometry = new JSONObject();
+		geometry.put("type", "MultiPolygon");
+		JSONArray cordinates = new JSONArray();
+		cordinates.put(1123);
+		geometry.put("coordinates",cordinates);
+		organisationUnitDetails.put("geometry", geometry);
+		return organisationUnitDetails;
 	}
 
-	private PhysicalLocation createPhysicalLocation() {
-		PhysicalLocation physicalLocation = new PhysicalLocation();
-		physicalLocation.setJurisdiction(true);
-		return physicalLocation;
+	private JSONObject createOrganisationUnitObject() {
+		JSONObject apiResponse = new JSONObject();
+		JSONObject pager = new JSONObject();
+
+		pager.put("page", 1);
+		pager.put("pageCount", 1);
+		pager.put("total", 1);
+		pager.put("pageSize", 50);
+
+		JSONArray organisationUnits = new JSONArray();
+
+		JSONObject hia2Report = new JSONObject();
+
+		hia2Report.put("id", 1);
+		hia2Report.put("displayName", "HIA2");
+
+		organisationUnits.put(hia2Report);
+
+		apiResponse.put("pager", pager);
+		apiResponse.put("organisationUnits", organisationUnits);
+		return apiResponse;
 	}
 }
