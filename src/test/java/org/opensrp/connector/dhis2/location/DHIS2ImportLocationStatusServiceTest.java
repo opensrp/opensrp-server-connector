@@ -17,7 +17,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.opensrp.connector.dhis2.location.DHIS2Constants.*;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS2_LAST_PAGE_SYNC_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_LOCATION_ROWS_PROCESSED_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_PAGE_COUNT_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.TOTAL_LOCATIONS_TOKEN_NAME;
+import static org.opensrp.connector.dhis2.location.DHIS2Constants.DHIS_LOCATION_JOB_STATUS_TOKEN_NAME;
 
 public class DHIS2ImportLocationStatusServiceTest extends TestResourceLoader {
 
