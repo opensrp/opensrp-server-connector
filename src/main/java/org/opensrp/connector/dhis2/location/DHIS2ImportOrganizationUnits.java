@@ -152,17 +152,14 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		if (locationProperty == null) {
 			locationProperty = new LocationProperty();
 		}
-		if (organisationUnitDetails.has(ORG_UNIT_CODE_KEY)) {
-			String codeval = organisationUnitDetails.optString(ORG_UNIT_CODE_KEY);
-			if (codeval != null) {
-				locationProperty.setCode(codeval);
-			}
+
+		String codeval = getStringValueByKeyFromOrgUnitDetails(ORG_UNIT_CODE_KEY, organisationUnitDetails);
+		if (codeval != null) {
+			locationProperty.setCode(codeval);
 		}
 
-		if (organisationUnitDetails.has(ORG_UNIT_NAME_KEY)) {
-			String locationName = organisationUnitDetails.optString(ORG_UNIT_NAME_KEY);
-			locationProperty.setName(locationName);
-		}
+		String locationName = getStringValueByKeyFromOrgUnitDetails(ORG_UNIT_NAME_KEY, organisationUnitDetails);
+		locationProperty.setName(locationName);
 
 		if (organisationUnitDetails.has(ORG_UNIT_LEVEL_KEY)) {
 			Integer level = organisationUnitDetails.optInt(ORG_UNIT_LEVEL_KEY);
@@ -200,54 +197,20 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 			customProperties = new HashMap<>();
 		}
 
-		String heirarchyValue = "";
-		if (organisationUnitDetails.has(ORG_UNIT_ANCESTORS_KEY)) {
-			JSONArray ancestors = organisationUnitDetails.getJSONArray(ORG_UNIT_ANCESTORS_KEY);
-			for (int i = 0; i < ancestors.length(); i++) {
-				JSONObject ancestor = ancestors.getJSONObject(i);
-				heirarchyValue += ancestor.getString("id");
-				if (i != ancestors.length() - 1)
-					heirarchyValue += ",";
-			}
-			customProperties.put("heirarchy", heirarchyValue);
-		}
+		String heirarchyValue = getAncestorsFromOrgUnitDetails(organisationUnitDetails);
+		customProperties.put("heirarchy", heirarchyValue);
 
 		locationProperty.setVersion(0);
 		locationProperty.setCustomProperties(customProperties);
 
 		physicalLocation.setProperties(locationProperty);
 
-		if (organisationUnitDetails.has(ORG_UNIT_ID_KEY)) {
-			String idValue = organisationUnitDetails.optString(ORG_UNIT_ID_KEY);
-			if (idValue != null) {
-				physicalLocation.setId(idValue);
-			}
+		String idValue = getStringValueByKeyFromOrgUnitDetails(ORG_UNIT_ID_KEY, organisationUnitDetails);
+		if (idValue != null) {
+			physicalLocation.setId(idValue);
 		}
 
-		Geometry geometry = physicalLocation.getGeometry();
-		JsonArray jsonArrayOfCordinates = new JsonArray();
-		String type;
-		if (geometry == null) {
-			geometry = new Geometry();
-			geometry.setCoordinates(jsonArrayOfCordinates);
-			geometry.setType(null);
-		}
-
-		if (organisationUnitDetails.has(ORG_UNIT_GEOMETRY_KEY)) {
-			JSONObject geometryValue = (JSONObject) organisationUnitDetails.get(ORG_UNIT_GEOMETRY_KEY);
-			JSONArray cordinates = (JSONArray) geometryValue.get(ORG_UNIT_CORDINATES_KEY);
-			String cordinatesArray = cordinates.toString();
-			jsonArrayOfCordinates = gson.fromJson(cordinatesArray, JsonArray.class);
-			geometry.setCoordinates(jsonArrayOfCordinates);
-			type = geometryValue.getString(ORG_UNIT_FEATURE_TYPE_KEY);
-			if (type.equals("MultiPolygon")) {
-				geometry.setType(Geometry.GeometryType.MULTI_POLYGON);
-			} else {
-				geometry.setType(Geometry.GeometryType.valueOf(StringUtils.upperCase(type)));
-			}
-
-		}
-
+		Geometry geometry = getGeometryFromOrgUnitDetails(physicalLocation, organisationUnitDetails);
 		physicalLocation.setGeometry(geometry);
 
 		physicalLocation.setJurisdiction(Boolean.TRUE);
@@ -275,6 +238,54 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 			}
 		}
 		return dTagList;
+	}
+
+	private String getStringValueByKeyFromOrgUnitDetails(String key, JSONObject organisationUnitDetails) {
+		if (organisationUnitDetails.has(key)) {
+			return organisationUnitDetails.optString(key);
+		}
+		return null;
+	}
+
+	private String getAncestorsFromOrgUnitDetails(JSONObject organisationUnitDetails) {
+		String heirarchyValue = "";
+		if (organisationUnitDetails.has(ORG_UNIT_ANCESTORS_KEY)) {
+			JSONArray ancestors = organisationUnitDetails.getJSONArray(ORG_UNIT_ANCESTORS_KEY);
+			for (int i = 0; i < ancestors.length(); i++) {
+				JSONObject ancestor = ancestors.getJSONObject(i);
+				heirarchyValue += ancestor.getString("id");
+				if (i != ancestors.length() - 1)
+					heirarchyValue += ",";
+			}
+		}
+		return heirarchyValue;
+	}
+
+	private Geometry getGeometryFromOrgUnitDetails(PhysicalLocation physicalLocation, JSONObject organisationUnitDetails) {
+		Geometry geometry = physicalLocation.getGeometry();
+		JsonArray jsonArrayOfCordinates = new JsonArray();
+		String type;
+		if (geometry == null) {
+			geometry = new Geometry();
+			geometry.setCoordinates(jsonArrayOfCordinates);
+			geometry.setType(null);
+		}
+		if (organisationUnitDetails.has(ORG_UNIT_GEOMETRY_KEY)) {
+			JSONObject geometryValue = (JSONObject) organisationUnitDetails.get(ORG_UNIT_GEOMETRY_KEY);
+			JSONArray cordinates = (JSONArray) geometryValue.get(ORG_UNIT_CORDINATES_KEY);
+			String cordinatesArray = cordinates.toString();
+			jsonArrayOfCordinates = gson.fromJson(cordinatesArray, JsonArray.class);
+			geometry.setCoordinates(jsonArrayOfCordinates);
+			type = geometryValue.getString(ORG_UNIT_FEATURE_TYPE_KEY);
+			if (type.equals("MultiPolygon")) {
+				geometry.setType(Geometry.GeometryType.MULTI_POLYGON);
+			} else {
+				geometry.setType(Geometry.GeometryType.valueOf(StringUtils.upperCase(type)));
+			}
+
+		}
+		return geometry;
+
 	}
 
 	private LocationTag getOrCreateLocationTag(String tagName) {
