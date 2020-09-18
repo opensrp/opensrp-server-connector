@@ -145,24 +145,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 			PhysicalLocation physicalLocation)
 			throws Exception {
 
-		Set<LocationTag> dTagList = new HashSet<>();
-		if (physicalLocation.getLocationTags() != null && !physicalLocation.getLocationTags().isEmpty()) {
-			dTagList.addAll(physicalLocation.getLocationTags());
-		}
-
-		if (organisationUnitDetails.has(ORG_UNIT_ORG_GROUP_KEY)) {
-			JSONArray organisationUnitGroups = organisationUnitDetails.getJSONArray(ORG_UNIT_ORG_GROUP_KEY);
-			for (int i = 0; i < organisationUnitGroups.length(); i++) {
-				JSONObject organisationUnitGroup = organisationUnitGroups.getJSONObject(i);
-				JSONObject fullGroup = dhis2EndPoints.getOrganisationalUnitGroup(
-						(String) organisationUnitGroup.get(ORG_UNIT_ORG_GROUP_ID_KEY));
-				LocationTag tag = getOrCreateLocationTag(
-						(String) fullGroup.get(ORG_UNIT_ORG_GROUP_NAME_KEY));
-
-				dTagList.add(tag);
-			}
-		}
-
+		Set<LocationTag> dTagList = getLocationTagsFromOrgUnitDetails(physicalLocation, organisationUnitDetails);
 		physicalLocation.setLocationTags(dTagList);
 
 		LocationProperty locationProperty = physicalLocation.getProperties();
@@ -270,6 +253,28 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 		physicalLocation.setJurisdiction(Boolean.TRUE);
 		physicalLocationService.addOrUpdate(physicalLocation);
 		return physicalLocation;
+	}
+
+	private Set<LocationTag> getLocationTagsFromOrgUnitDetails(PhysicalLocation physicalLocation,
+			JSONObject organisationUnitDetails) {
+		Set<LocationTag> dTagList = new HashSet<>();
+		if (physicalLocation.getLocationTags() != null && !physicalLocation.getLocationTags().isEmpty()) {
+			dTagList.addAll(physicalLocation.getLocationTags());
+		}
+
+		if (organisationUnitDetails.has(ORG_UNIT_ORG_GROUP_KEY)) {
+			JSONArray organisationUnitGroups = organisationUnitDetails.getJSONArray(ORG_UNIT_ORG_GROUP_KEY);
+			for (int i = 0; i < organisationUnitGroups.length(); i++) {
+				JSONObject organisationUnitGroup = organisationUnitGroups.getJSONObject(i);
+				JSONObject fullGroup = dhis2EndPoints.getOrganisationalUnitGroup(
+						(String) organisationUnitGroup.get(ORG_UNIT_ORG_GROUP_ID_KEY));
+				LocationTag tag = getOrCreateLocationTag(
+						(String) fullGroup.get(ORG_UNIT_ORG_GROUP_NAME_KEY));
+
+				dTagList.add(tag);
+			}
+		}
+		return dTagList;
 	}
 
 	private LocationTag getOrCreateLocationTag(String tagName) {
