@@ -1,6 +1,5 @@
 package org.opensrp.connector.openmrs;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.opensrp.api.domain.Location;
 import org.opensrp.common.util.HttpUtil;
+import org.opensrp.connector.HttpUtils;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.opensrp.connector.openmrs.service.OpenmrsLocationService;
 import org.opensrp.connector.openmrs.service.OpenmrsService;
@@ -19,12 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Credentials;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 @Component
 public class FetchLocationsHelper extends OpenmrsService {
@@ -45,10 +39,10 @@ public class FetchLocationsHelper extends OpenmrsService {
 	}
 	
 	public List<Location> getAllLocations(List<Location> locationList, int startIndex) throws JSONException {
-		String response = this.getURL(
+		String response = HttpUtils.getURL(
 		    HttpUtil.removeEndingSlash(OPENMRS_BASE_URL) + "/" + OpenmrsLocationService.LOCATION_URL
 		            + "?v=custom:(uuid,display,name,tags:(uuid,display),parentLocation:(uuid,display))&limit=100&startIndex="
-		            + startIndex);
+		            + startIndex,OPENMRS_USER,OPENMRS_PWD);
 		logger.debug("response received : {} ", response);
 		
 		logger.info(String.format("Location fetch starting at index %d ", startIndex));
@@ -112,24 +106,5 @@ public class FetchLocationsHelper extends OpenmrsService {
 		return null;
 	}
 	
-	public String getURL(String url) {
-		Request request = new Request.Builder().url(url)
-		        .addHeader("Authorization", Credentials.basic(OPENMRS_USER, OPENMRS_PWD)).build();
-		OkHttpClient client = new OkHttpClient();
-		Call call = client.newCall(request);
-		Response response;
-		try {
-			response = call.execute();
-			String responseBody = response.body().string();
-			if (!StringUtils.isBlank(responseBody)) {
-				return responseBody;
-			}
-		}
-		catch (IOException e) {
-			logger.error(e.getMessage(), e);
-		}
-		return null;
-		
-	}
 	
 }

@@ -2,6 +2,7 @@ package org.opensrp.connector.openmrs.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -12,15 +13,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.opensrp.api.domain.Location;
 import org.opensrp.api.util.LocationTree;
+import org.opensrp.connector.HttpUtils;
 import org.opensrp.connector.openmrs.FetchLocationsHelper;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ HttpUtils.class })
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class OpenmrsLocationTest extends TestResourceLoader {
 	
 	private FetchLocationsHelper fetchLocationsHelper;
@@ -31,7 +41,7 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 	
 	@Before
 	public void setup() throws IOException {
-		
+		PowerMockito.mockStatic(HttpUtils.class);
 		fetchLocationsHelper = Mockito.spy(FetchLocationsHelper.class);
 
 		OpenmrsLocationService ls = new OpenmrsLocationService(openmrsOpenmrsUrl, openmrsUsername, openmrsPassword);
@@ -115,10 +125,8 @@ public class OpenmrsLocationTest extends TestResourceLoader {
 		locationService.OPENMRS_VERSION = "2.1.4";
 
 		Whitebox.setInternalState(locationService, "fetchLocationsHelper", fetchLocationsHelper);
-		
-		Mockito.doReturn(
-		    "{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"name\":\"Kabila Village\",\"tags\":[{\"display\":\"Som display\"}],\"attributes\":[{\"voided\":false,\"display\":\"Another:Display\"}]}")
-		        .when(fetchLocationsHelper).getURL(Mockito.anyString());
+		String url = "{\"uuid\":\"2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8\",\"name\":\"Kabila Village\",\"tags\":[{\"display\":\"Som display\"}],\"attributes\":[{\"voided\":false,\"display\":\"Another:Display\"}]}";
+		PowerMockito.when(HttpUtils.getURL(anyString(), anyString(), anyString())).thenReturn(url);
 		Location location = locationService.getLocation("2c3a0ebd-f79d-4128-a6d3-5dfbffbd01c8");
 		assertNotNull(location);
 		assertEquals(location.getName(), "Kabila Village");

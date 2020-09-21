@@ -6,7 +6,7 @@
 
     <artifactId>opensrp-server-connector</artifactId>
     <packaging>jar</packaging>
-    <version>2.1.8-SNAPSHOT</version>
+    <version>2.2.0-PREVIEW-SNAPSHOT</version>
     <name>opensrp-server-connector</name>
     <description>OpenSRP Server Connector module</description>
     <url>http://github.com/OpenSRP/opensrp-server-connector</url>
@@ -20,6 +20,7 @@
         <opensrp.common.version>2.0.3-SNAPSHOT</opensrp.common.version>
         <opensrp.core.version>2.5.20-SNAPSHOT</opensrp.core.version>
         <powermock.version>2.0.5</powermock.version>
+        <lombok.version>1.18.12</lombok.version>
 
     </properties>
 
@@ -134,6 +135,12 @@
 			<artifactId>org.ektorp</artifactId>
 			<version>1.5.0</version>
 		</dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
