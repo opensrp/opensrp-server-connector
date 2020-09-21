@@ -6,7 +6,7 @@
 
     <artifactId>opensrp-server-connector</artifactId>
     <packaging>jar</packaging>
-    <version>2.2.0-PREVIEW-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
     <name>opensrp-server-connector</name>
     <description>OpenSRP Server Connector module</description>
     <url>http://github.com/OpenSRP/opensrp-server-connector</url>
