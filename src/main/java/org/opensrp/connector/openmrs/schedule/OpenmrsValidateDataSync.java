@@ -237,7 +237,7 @@ public class OpenmrsValidateDataSync {
 				eventJson = encounterService.createEncounter(e);
 				if (eventJson != null && eventJson.has("uuid")) {
 					e.addIdentifier(EncounterService.OPENMRS_UUID_IDENTIFIER_TYPE, eventJson.getString("uuid"));
-					eventService.updateEvent(e);
+					eventService.updateEvent(e, e.getProviderId());
 				}
 			}
 			catch (Exception ex2) {

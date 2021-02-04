@@ -150,7 +150,7 @@ public class OpenmrsSyncerListener {
 						encounter = eventJson;// only for test code purpose
 						if (eventJson != null && eventJson.has("uuid")) {
 							event.addIdentifier(EncounterService.OPENMRS_UUID_IDENTIFIER_TYPE, eventJson.getString("uuid"));
-							eventService.updateEvent(event);
+							eventService.updateEvent(event, event.getProviderId());
 							config.updateAppStateToken(SchedulerConfig.openmrs_syncer_sync_event_by_date_updated,
 							    event.getServerVersion());
 						}

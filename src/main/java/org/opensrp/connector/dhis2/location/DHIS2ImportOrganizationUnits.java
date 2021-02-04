@@ -118,7 +118,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
 		PhysicalLocation physicalLocation;
 
-		physicalLocation = physicalLocationService.getLocation(orgUnitId, true);
+		physicalLocation = physicalLocationService.getLocation(orgUnitId, true, false);
 		logger.debug("Processing Organization Unit : " + organizationUnit);
 		JSONObject organisationUnitDetails = dhis2EndPoints.getOrganisationalUnit(orgUnitId);
 
