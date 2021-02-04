@@ -136,7 +136,7 @@ public class OpenmrsLocationTest extends OpenmrsApiService {
 		assertEquals(expectedlocation, actualLocation);
 	}
 	
-	@Test(expected = JSONException.class)
+	@Test
 	public void testGetLocationException() throws JSONException {
 		String locationName = "testLocationName";
 		ls.getLocation(locationName);

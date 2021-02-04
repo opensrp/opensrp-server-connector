@@ -68,7 +68,7 @@ public class DHIS2ImportOrganizationUnitsTest extends TestResourceLoader {
 		locationTags.add(locationTag);
 
 		when(dhis2EndPoints.getOrganisationalUnitList(anyInt())).thenReturn(apiResponse);
-		when(physicalLocationService.getLocation(anyString(),anyBoolean())).thenReturn(physicalLocation);
+		when(physicalLocationService.getLocation(anyString(),anyBoolean(),anyBoolean())).thenReturn(physicalLocation);
 		when(dhis2EndPoints.getOrganisationalUnit(anyString())).thenReturn(organisationUnitDetails);
 		when(dhis2EndPoints.getOrganisationalUnitGroup(anyString())).thenReturn(organisationUnitGroupObject);
 		doNothing().when(allAppStateTokens).add(any(AppStateToken.class));
