@@ -218,7 +218,7 @@ public class PatientAtomfeed extends OpenmrsService implements EventWorker, Atom
 			
 			if (emptyUpdateBirthRegEvent != null) {
 				emptyUpdateBirthRegEvent.setServerVersion(0L);
-				eventService.updateEvent(emptyUpdateBirthRegEvent);
+				eventService.updateEvent(emptyUpdateBirthRegEvent, emptyUpdateBirthRegEvent.getProviderId());
 			} else {
 				
 				org.smartregister.domain.Event event = (org.smartregister.domain.Event) new org.smartregister.domain.Event()
