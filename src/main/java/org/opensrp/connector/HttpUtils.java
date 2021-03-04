@@ -6,8 +6,8 @@ package org.opensrp.connector;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Credentials;
@@ -20,7 +20,7 @@ import com.squareup.okhttp.Response;
  */
 public class HttpUtils {
 	
-	private static Logger logger = LoggerFactory.getLogger(HttpUtils.class);
+	private static Logger logger = LogManager.getLogger(HttpUtils.class);
 	
 	public  static String getURL(String url,String username, String password) {
 		Request request = new Request.Builder().url(url)

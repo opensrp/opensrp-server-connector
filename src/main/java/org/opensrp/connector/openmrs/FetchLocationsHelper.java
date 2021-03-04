@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,8 +16,6 @@ import org.opensrp.connector.HttpUtils;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
 import org.opensrp.connector.openmrs.service.OpenmrsLocationService;
 import org.opensrp.connector.openmrs.service.OpenmrsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class FetchLocationsHelper extends OpenmrsService {
 	
-	private static Logger logger = LoggerFactory.getLogger(FetchLocationsHelper.class);
+	private static Logger logger = LogManager.getLogger(FetchLocationsHelper.class);
 	
 	private static final String LOCATIONS_CACHE_NAME = "getAllOpenMRSlocations";
 	

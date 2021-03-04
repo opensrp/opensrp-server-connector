@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.opensrp.common.util.DateUtil;
 import org.opensrp.domain.Camp;
@@ -15,15 +17,13 @@ import org.smartregister.domain.Client;
 import org.smartregister.domain.Event;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.RapidProServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MessageService {
 	
-	private static Logger logger = LoggerFactory.getLogger(MessageService.class.toString());
+	private static Logger logger = LogManager.getLogger(MessageService.class.toString());
 	
 	private RapidProServiceImpl rapidproService;
 	

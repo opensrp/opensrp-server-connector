@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,14 +21,12 @@ import org.smartregister.domain.Event;
 import org.smartregister.domain.Obs;
 import org.smartregister.domain.User;
 import org.opensrp.service.ClientService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EncounterService extends OpenmrsService {
-	private static Logger logger = LoggerFactory.getLogger(EncounterService.class.toString());
+	private static Logger logger = LogManager.getLogger(EncounterService.class.toString());
 	public static final String OPENMRS_UUID_IDENTIFIER_TYPE = "OPENMRS_UUID";
 	private static final String ENCOUNTER_URL = "ws/rest/v1/encounter";//"ws/rest/emrapi/encounter";
 	private static final String OBS_URL = "ws/rest/v1/obs";

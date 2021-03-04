@@ -3,6 +3,8 @@ package org.opensrp.connector.dhis2.location;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opensrp.connector.dhis2.DHIS2Service;
@@ -10,7 +12,6 @@ import org.opensrp.domain.AppStateToken;
 import org.opensrp.repository.AppStateTokensRepository;
 import org.opensrp.service.LocationTagService;
 import org.opensrp.service.PhysicalLocationService;
-import org.slf4j.LoggerFactory;
 import org.smartregister.domain.Geometry;
 import org.smartregister.domain.LocationProperty;
 import org.smartregister.domain.LocationTag;
@@ -68,7 +69,7 @@ public class DHIS2ImportOrganizationUnits extends DHIS2Service {
 
 	private boolean isJobFailed;
 
-	private static org.slf4j.Logger logger = LoggerFactory.getLogger(DHIS2ImportOrganizationUnits.class.toString());
+	private static Logger logger = LogManager.getLogger(DHIS2ImportOrganizationUnits.class.toString());
 
 	@Autowired
 	public DHIS2ImportOrganizationUnits(AppStateTokensRepository allAppStateTokens) {

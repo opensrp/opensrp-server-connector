@@ -6,6 +6,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,8 +22,6 @@ import org.opensrp.service.ClientService;
 import org.opensrp.service.ConfigService;
 import org.opensrp.service.ErrorTraceService;
 import org.opensrp.service.EventService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +30,7 @@ public class OpenmrsValidateDataSync {
 	
 	private static final ReentrantLock lock = new ReentrantLock();
 	
-	private static Logger logger = LoggerFactory.getLogger(OpenmrsValidateDataSync.class.toString());
+	private static Logger logger = LogManager.getLogger(OpenmrsValidateDataSync.class.toString());
 	
 	private ConfigService config;
 	
