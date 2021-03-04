@@ -95,13 +95,12 @@ public class OpenmrsLocationService extends OpenmrsService {
 			String locTreeId = fillTreeWithHierarchy(ltr, loc);
 			Location lp = ltr.findLocation(locTreeId).getParentLocation();
 			if (lp != null) {
-				LogManager.getLogger(this.getClass())
-						.debug("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
+				logger.debug("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
 				fillTreeWithUpperHierarchy(ltr, lp.getLocationId());
 			}
 		}
 		
-		LogManager.getLogger(this.getClass()).debug("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
+		logger.debug("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
 		return ltr;
 	}
 	
