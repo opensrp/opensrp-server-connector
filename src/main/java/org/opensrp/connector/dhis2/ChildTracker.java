@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +27,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChildTracker extends DHIS2Service implements DHIS2Tracker {
 	
-	private static org.slf4j.Logger logger = LoggerFactory.getLogger(ChildTracker.class.toString());
+	private static Logger logger = LogManager.getLogger(ChildTracker.class.toString());
 	
 	@Autowired
 	private DHIS2TrackerService dhis2TrackerService;

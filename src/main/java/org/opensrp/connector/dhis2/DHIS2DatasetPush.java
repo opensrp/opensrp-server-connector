@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,8 +22,6 @@ import org.opensrp.domain.Hia2Indicator;
 import org.opensrp.domain.Report;
 import org.opensrp.service.ConfigService;
 import org.opensrp.service.ReportService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,7 +34,7 @@ enum DhisSchedulerConfig {
 @Component
 public class DHIS2DatasetPush extends DHIS2Service {
 	
-	private static Logger logger = LoggerFactory.getLogger(DHIS2DatasetPush.class.toString());
+	private static Logger logger = LogManager.getLogger(DHIS2DatasetPush.class.toString());
 	
 	private static final ReentrantLock lock = new ReentrantLock();
 	

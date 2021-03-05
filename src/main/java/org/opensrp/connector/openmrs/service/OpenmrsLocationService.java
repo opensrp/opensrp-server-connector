@@ -11,6 +11,8 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,15 +23,13 @@ import org.opensrp.common.util.HttpUtil;
 import org.opensrp.connector.HttpUtils;
 import org.opensrp.connector.openmrs.FetchLocationsHelper;
 import org.opensrp.connector.openmrs.constants.ConnectorConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OpenmrsLocationService extends OpenmrsService {
 	
-	private static Logger logger = LoggerFactory.getLogger(OpenmrsLocationService.class);
+	private static Logger logger = LogManager.getLogger(OpenmrsLocationService.class);
 	
 	public static final String LOCATION_URL = "ws/rest/v1/location";
 	
@@ -95,13 +95,12 @@ public class OpenmrsLocationService extends OpenmrsService {
 			String locTreeId = fillTreeWithHierarchy(ltr, loc);
 			Location lp = ltr.findLocation(locTreeId).getParentLocation();
 			if (lp != null) {
-				LoggerFactory.getLogger(this.getClass())
-						.debug("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
+				logger.debug("getLocationTreeOf node: " + ReflectionToStringBuilder.toString(lp));
 				fillTreeWithUpperHierarchy(ltr, lp.getLocationId());
 			}
 		}
 		
-		LoggerFactory.getLogger(this.getClass()).debug("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
+		logger.debug("getLocationTreeOf tree: " + ReflectionToStringBuilder.toString(ltr));
 		return ltr;
 	}
 	

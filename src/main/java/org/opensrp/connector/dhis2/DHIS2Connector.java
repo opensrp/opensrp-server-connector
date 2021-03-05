@@ -3,10 +3,11 @@
  */
 package org.opensrp.connector.dhis2;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DHIS2Connector extends DHIS2Service {
 	
-	private static org.slf4j.Logger logger = LoggerFactory.getLogger(DHIS2Connector.class.toString());
+	private static Logger logger = LogManager.getLogger(DHIS2Connector.class.toString());
 	
 	private String orgUnit;
 	

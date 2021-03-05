@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,14 +14,13 @@ import org.smartregister.domain.Client;
 import org.smartregister.domain.Event;
 import org.smartregister.domain.Obs;
 import org.opensrp.service.ClientService;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class VaccinationTracker extends DHIS2Service {
 	
-	private static org.slf4j.Logger logger = LoggerFactory.getLogger(VaccinationTracker.class.toString());
+	private static Logger logger = LogManager.getLogger(VaccinationTracker.class.toString());
 	
 	@Autowired
 	private DHIS2TrackerService dhis2TrackerService;
