@@ -15,8 +15,10 @@ import org.smartregister.domain.Event;
 import org.smartregister.domain.Obs;
 import org.opensrp.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+@Profile("dhis2-sync-vaccine-tracker")
 @Service
 public class VaccinationTracker extends DHIS2Service {
 	
