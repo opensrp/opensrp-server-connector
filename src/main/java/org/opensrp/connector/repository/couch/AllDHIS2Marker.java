@@ -12,15 +12,15 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-@Profile("dhis2-sync")
+@Profile("dhis2-sync-vaccine-tracker")
 @Repository
 public class AllDHIS2Marker extends BaseRepository<DHIS2Marker> {
-	
+
 	@Autowired
 	protected AllDHIS2Marker(@Qualifier(AllConstants.OPENSRP_DATABASE_CONNECTOR) CouchDbConnector db) {
 		super(DHIS2Marker.class, db);
 	}
-	
+
 	@GenerateView
 	public List<DHIS2Marker> findByName(String name) {
 		return queryView("by_name", name);

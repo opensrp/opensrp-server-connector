@@ -14,8 +14,10 @@ import org.smartregister.domain.Event;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+@Profile("dhis2-sync-vaccine-tracker")
 @Component
 public class DHIS2SyncerListener {
 	
