@@ -9,10 +9,8 @@ import org.opensrp.common.AllConstants;
 import org.opensrp.connector.domain.Camp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-@Profile("rapidpro")
 @Repository
 public class AllCamp extends BaseRepository<Camp> {
 	
