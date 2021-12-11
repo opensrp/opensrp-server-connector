@@ -1,7 +1,5 @@
 package org.opensrp.connector.rapidpro;
 
-import static org.opensrp.dto.AlertStatus.normal;
-import static org.opensrp.dto.AlertStatus.upcoming;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +9,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
-import org.opensrp.common.util.DateUtil;
 import org.opensrp.domain.Camp;
 import org.smartregister.domain.Client;
 import org.smartregister.domain.Event;
@@ -63,8 +60,6 @@ public class MessageService {
 						generateDataAndsendMessageToRapidpro(mother, ClientType.mother, messageFactory, camp);
 					}
 					
-				} else {
-					
 				}
 			}
 		} else {
@@ -90,33 +85,16 @@ public class MessageService {
 		}
 	}
 	
-	private boolean isEligible(Map<String, String> data) {
-		boolean status = false;
-		if (data.get("alertStatus").equalsIgnoreCase(normal.name())) {
-			if (DateUtil.dateDiff(data.get("expiryDate")) == 0) {
-				status = true;
-			}
-			
-		} else if (data.get("alertStatus").equalsIgnoreCase(upcoming.name())) {
-			if (DateUtil.dateDiff(data.get("startDate")) == 0) {
-				status = true;
-			}
-		}
-		return status;
-	}
-	
 	private String addExtensionToMobile(String mobile) {
+		String phoneNumber;
 		if (mobile.length() == 10) {
-			mobile = "+880" + mobile;
-			
+			phoneNumber = new StringBuilder().append("+880").append(mobile).toString();
 		} else if (mobile.length() > 10) {
-			mobile = mobile.substring(mobile.length() - 10);
-			mobile = "+880" + mobile;
+			phoneNumber = new StringBuilder().append("+880").append(mobile.substring(mobile.length() - 10)).toString();
 		} else {
-			
 			throw new IllegalArgumentException("invalid mobile no!!");
 		}
-		return mobile;
+		return phoneNumber;
 		
 	}
 	
