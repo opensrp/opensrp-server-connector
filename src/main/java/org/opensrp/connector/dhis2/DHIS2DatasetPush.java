@@ -2,10 +2,13 @@ package org.opensrp.connector.dhis2;
 
 import static org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,9 +24,15 @@ import org.opensrp.domain.AppStateToken;
 import org.opensrp.domain.Hia2Indicator;
 import org.opensrp.domain.Report;
 import org.opensrp.service.ConfigService;
+import org.opensrp.service.PhysicalLocationService;
 import org.opensrp.service.ReportService;
+import org.smartregister.domain.LocationProperty;
+import org.smartregister.domain.PhysicalLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
 
 enum DhisSchedulerConfig {
@@ -46,6 +55,9 @@ public class DHIS2DatasetPush extends DHIS2Service {
 	
 	@Autowired
 	protected OpenmrsLocationService openmrsLocationService;
+
+	@Autowired
+	protected PhysicalLocationService physicalLocationService;
 	
 	protected Dhis2HttpUtils dhis2HttpUtils;
 	
@@ -109,12 +121,37 @@ public class DHIS2DatasetPush extends DHIS2Service {
 		DateTime completeDataDate = report.getReportDate();
 		String formatedCompleteDataDate = new SimpleDateFormat("yyyy-MM-dd").format(completeDataDate.toDate());
 		String periodDate = new SimpleDateFormat("yyyyMM").format(completeDataDate.toDate());
-		
-		// get openmrs location and retrieve dhis2 org unit Id
-		Location openmrsLocation = openmrsLocationService.getLocation(openmrsLocationUuid);
-		System.out.println("[OpenmrsLocation]: " + openmrsLocation);
-		String dhis2OrgUnitId = openmrsLocation.getAttributes() != null ? (String) openmrsLocation.getAttribute("dhis_ou_id")
-		        : null;
+
+		Resource resource = new ClassPathResource("/opensrp.properties");
+		boolean usesOpensrpLocation = false;
+		try {
+			Properties props = PropertiesLoaderUtils.loadProperties(resource);
+			if (!props.isEmpty()) {
+				usesOpensrpLocation = props.getProperty("dhis2.keycloak.location");
+			}
+		}
+		catch (IOException e) {
+			logger.error("Checking for dhis2 properties", e);
+		}
+
+		String dhis2OrgUnitId = "";
+		if (!usesOpensrpLocation) {
+			// get openmrs location and retrieve dhis2 org unit Id
+			Location openmrsLocation = openmrsLocationService.getLocation(openmrsLocationUuid);
+			System.out.println("[OpenmrsLocation]: " + openmrsLocation);
+			dhis2OrgUnitId =
+					openmrsLocation.getAttributes() != null ? (String) openmrsLocation.getAttribute("dhis_ou_id")
+							: null;
+		} else {
+			PhysicalLocation physicalLocation = physicalLocationService.getLocation(openmrsLocationUuid,false,false);
+			if (physicalLocation != null && physicalLocation.getProperties() != null){
+				LocationProperty locationProperty = physicalLocation.getProperties();
+				if (locationProperty.getCustomProperties() != null) {
+					Map<String, String> customProperties = locationProperty.getCustomProperties();
+					dhis2OrgUnitId = customProperties.get("externalId");
+				}
+			}
+		}
 		
 		if (StringUtils.isBlank(dhis2OrgUnitId)) {
 			logger.error(
