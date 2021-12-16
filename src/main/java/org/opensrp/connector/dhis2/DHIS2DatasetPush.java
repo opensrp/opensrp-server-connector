@@ -127,7 +127,7 @@ public class DHIS2DatasetPush extends DHIS2Service {
 		try {
 			Properties props = PropertiesLoaderUtils.loadProperties(resource);
 			if (!props.isEmpty()) {
-				usesOpensrpLocation = props.getProperty("dhis2.keycloak.location");
+				usesOpensrpLocation = Boolean.parseBoolean(props.getProperty("dhis2.keycloak.location"));
 			}
 		}
 		catch (IOException e) {
