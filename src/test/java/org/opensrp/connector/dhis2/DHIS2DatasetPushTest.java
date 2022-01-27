@@ -1,14 +1,22 @@
 package org.opensrp.connector.dhis2;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -26,15 +34,16 @@ import org.opensrp.connector.openmrs.service.TestResourceLoader;
 import org.opensrp.domain.Hia2Indicator;
 import org.opensrp.domain.Report;
 import org.opensrp.service.ConfigService;
+import org.opensrp.service.PhysicalLocationService;
 import org.opensrp.service.ReportService;
+import org.powermock.reflect.internal.WhiteboxImpl;
+import org.smartregister.domain.LocationProperty;
+import org.smartregister.domain.PhysicalLocation;
 
 public class DHIS2DatasetPushTest extends TestResourceLoader {
 	
 	@Rule
 	public MockitoRule rule = MockitoJUnit.rule();
-	
-	@Mock
-	DHIS2DatasetPush mockDatasetPush;
 	
 	@Mock
 	Dhis2HttpUtils dhis2HttpUtils;
@@ -140,6 +149,76 @@ public class DHIS2DatasetPushTest extends TestResourceLoader {
 			
 			assertEquals(dataValue.get("value"), dataElement.getValue());
 		}
+	}
+
+	@Test
+	public void testCreateDHIS2DatasetShouldReturnValidJsonObjectWithDhisOrgUnitIdFromOpensrp() throws JSONException {
+		Hia2Indicator chn1005 = new Hia2Indicator("CHN1-005", "n0uHub5ubqH", "100");
+		Hia2Indicator chn1010 = new Hia2Indicator("CHN1-010", "IWwblgpMxiS", "150");
+
+		List<Hia2Indicator> dataElements = new ArrayList<Hia2Indicator>();
+
+		dataElements.add(chn1005);
+		dataElements.add(chn1010);
+
+		Report report = this.createHIA2ReportData(dataElements);
+
+		dhis2DatasetPush.dhis2HttpUtils = dhis2HttpUtils;
+		dhis2DatasetPush.openmrsLocationService = this.mockOpenmrsLocationService;
+
+		PhysicalLocation physicalLocation = new PhysicalLocation();
+
+		LocationProperty locationProperty = new LocationProperty();
+		physicalLocation.setProperties(locationProperty);
+
+		Map<String, String> customProperties = new HashMap<>();
+		customProperties.put(dhis2DatasetPush.EXTERNAL_ID, UUID.randomUUID().toString());
+		locationProperty.setCustomProperties(customProperties);
+
+		PhysicalLocationService mockPhysicalLocationService = mock(PhysicalLocationService.class);
+		doReturn(physicalLocation).when(mockPhysicalLocationService).getLocation(eq(report.getLocationId()), eq(false), eq(false));
+
+		WhiteboxImpl.setInternalState(dhis2DatasetPush, "physicalLocationService", mockPhysicalLocationService);
+		WhiteboxImpl.setInternalState(dhis2DatasetPush, "usesOpensrpLocation", true);
+
+		JSONObject dhis2DatasetToPush = dhis2DatasetPush.createDHIS2Dataset(report);
+
+		assertNotNull(dhis2DatasetToPush);
+		assertEquals(customProperties.get(dhis2DatasetPush.EXTERNAL_ID), dhis2DatasetToPush.get("orgUnit"));
+	}
+
+	@Test
+	public void testCreateDHIS2DatasetShouldReturnNullIfDhis2OrgUnitIdIsNull() throws JSONException {
+		Hia2Indicator chn1005 = new Hia2Indicator("CHN1-005", "n0uHub5ubqH", "100");
+		Hia2Indicator chn1010 = new Hia2Indicator("CHN1-010", "IWwblgpMxiS", "150");
+
+		List<Hia2Indicator> dataElements = new ArrayList<Hia2Indicator>();
+
+		dataElements.add(chn1005);
+		dataElements.add(chn1010);
+
+		Report report = this.createHIA2ReportData(dataElements);
+
+		dhis2DatasetPush.dhis2HttpUtils = dhis2HttpUtils;
+		dhis2DatasetPush.openmrsLocationService = this.mockOpenmrsLocationService;
+
+		PhysicalLocation physicalLocation = new PhysicalLocation();
+
+		LocationProperty locationProperty = new LocationProperty();
+		physicalLocation.setProperties(locationProperty);
+
+		Map<String, String> customProperties = new HashMap<>();
+		locationProperty.setCustomProperties(customProperties);
+
+		PhysicalLocationService mockPhysicalLocationService = mock(PhysicalLocationService.class);
+		doReturn(physicalLocation).when(mockPhysicalLocationService).getLocation(eq(report.getLocationId()), eq(false), eq(false));
+
+		WhiteboxImpl.setInternalState(dhis2DatasetPush, "physicalLocationService", mockPhysicalLocationService);
+		WhiteboxImpl.setInternalState(dhis2DatasetPush, "usesOpensrpLocation", true);
+
+		JSONObject dhis2DatasetToPush = dhis2DatasetPush.createDHIS2Dataset(report);
+
+		assertNull(dhis2DatasetToPush);
 	}
 	
 	@Test

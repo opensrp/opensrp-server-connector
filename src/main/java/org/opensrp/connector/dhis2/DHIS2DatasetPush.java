@@ -62,7 +62,7 @@ public class DHIS2DatasetPush extends DHIS2Service {
 	
 	public static final String DATASET_ENDPOINT = "dataSets";
 
-	private final String EXTERNAL_ID = "externalId";
+	protected final String EXTERNAL_ID = "externalId";
 
 	private final String DHIS_ORGANIZATION_UNIT_ID = "dhis_ou_id";
 
