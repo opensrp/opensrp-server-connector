@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +22,10 @@ import org.opensrp.domain.AppStateToken;
 import org.opensrp.domain.Hia2Indicator;
 import org.opensrp.domain.Report;
 import org.opensrp.service.ConfigService;
+import org.opensrp.service.PhysicalLocationService;
 import org.opensrp.service.ReportService;
+import org.smartregister.domain.LocationProperty;
+import org.smartregister.domain.PhysicalLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -46,6 +50,9 @@ public class DHIS2DatasetPush extends DHIS2Service {
 	
 	@Autowired
 	protected OpenmrsLocationService openmrsLocationService;
+
+	@Autowired
+	protected PhysicalLocationService physicalLocationService;
 	
 	protected Dhis2HttpUtils dhis2HttpUtils;
 	
@@ -54,7 +61,14 @@ public class DHIS2DatasetPush extends DHIS2Service {
 	public static final String DATAVALUESET_ENDPOINT = "dataValueSets";
 	
 	public static final String DATASET_ENDPOINT = "dataSets";
-	
+
+	protected final String EXTERNAL_ID = "externalId";
+
+	private final String DHIS_ORGANIZATION_UNIT_ID = "dhis_ou_id";
+
+	@Value("#{opensrp['dhis2.opensrp.location'] ?: false }")
+	private boolean usesOpensrpLocation;
+
 	@Autowired
 	public DHIS2DatasetPush(@Value("#{opensrp['dhis2.url']}") String dhis2Url,
 	    @Value("#{opensrp['dhis2.username']}") String user, @Value("#{opensrp['dhis2.password']}") String password) {
@@ -94,32 +108,46 @@ public class DHIS2DatasetPush extends DHIS2Service {
 		
 		// prepare report data
 		String reportId = this.getDHIS2ReportId(report.getReportType());
-		String openmrsLocationUuid = report.getLocationId();
+		String locationId = report.getLocationId();
 		
 		if (StringUtils.isBlank(reportId)) {
-			logger.error("Dhis2 dataset with id for " + reportId + " Not found. Add the dataset in dhis2.");
+			logger.error("Dhis2 dataset with id for {} Not found. Add the dataset in dhis2.", reportId);
 			return null;
 		}
 		
-		if (StringUtils.isBlank(openmrsLocationUuid)) {
-			logger.error("HIA2 report does not have a location tag. Please add it. Report id: " + report.getId());
+		if (StringUtils.isBlank(locationId)) {
+			logger.error("HIA2 report does not have a location tag. Please add it. Report id: {}", report.getId());
 			return null;
 		}
 		
 		DateTime completeDataDate = report.getReportDate();
 		String formatedCompleteDataDate = new SimpleDateFormat("yyyy-MM-dd").format(completeDataDate.toDate());
 		String periodDate = new SimpleDateFormat("yyyyMM").format(completeDataDate.toDate());
-		
-		// get openmrs location and retrieve dhis2 org unit Id
-		Location openmrsLocation = openmrsLocationService.getLocation(openmrsLocationUuid);
-		System.out.println("[OpenmrsLocation]: " + openmrsLocation);
-		String dhis2OrgUnitId = openmrsLocation.getAttributes() != null ? (String) openmrsLocation.getAttribute("dhis_ou_id")
-		        : null;
+
+		String dhis2OrgUnitId = "";
+		if (!usesOpensrpLocation) {
+			// get openmrs location and retrieve dhis2 org unit Id
+			Location openmrsLocation = openmrsLocationService.getLocation(locationId);
+			logger.info("[OpenmrsLocation]: {}", openmrsLocation);
+			dhis2OrgUnitId =
+					openmrsLocation.getAttributes() != null ? (String) openmrsLocation.getAttribute(
+							DHIS_ORGANIZATION_UNIT_ID)
+							: null;
+		} else {
+			PhysicalLocation physicalLocation = physicalLocationService.getLocation(locationId,false,false);
+			if (physicalLocation != null && physicalLocation.getProperties() != null){
+				LocationProperty locationProperty = physicalLocation.getProperties();
+				if (locationProperty != null && locationProperty.getCustomProperties() != null) {
+					Map<String, String> customProperties = locationProperty.getCustomProperties();
+					dhis2OrgUnitId = customProperties.get(EXTERNAL_ID);
+				}
+			}
+		}
 		
 		if (StringUtils.isBlank(dhis2OrgUnitId)) {
 			logger.error(
-			    "Dhis2 Organization unit for " + openmrsLocationUuid + " Not found. Check if the data attribute exists.");
-			return null; //org unit not found
+			    "Dhis2 Organization unit for {} Not found. Check if the data attribute exists.", locationId);
+			return null;
 		}
 		
 		List<String> availableIndicators = availableIndicators(reportId);
