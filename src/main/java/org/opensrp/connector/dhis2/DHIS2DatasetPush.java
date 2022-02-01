@@ -219,7 +219,7 @@ public class DHIS2DatasetPush extends DHIS2Service {
 						logger.error(response);
 					} else if(DHIS2ResponseStatus.WARNING.name().equalsIgnoreCase(status)) {
 						logger.warn(response);
-					} else if(DHIS2ResponseStatus.SUCCESS.name().equalsIgnoreCase(status)) {
+					} else {
 						logger.info(response);
 					}
 					report.setStatus(status);
