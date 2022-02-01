@@ -214,13 +214,21 @@ public class DHIS2DatasetPush extends DHIS2Service {
 					}
 					
 					JSONObject response = dhis2HttpUtils.post(DATAVALUESET_ENDPOINT, "", dhis2DatasetToPush.toString());
-					report.setStatus(response.getString("status"));
+					String status = response.optString("status");
+					if(DHIS2ResponseStatus.ERROR.name().equalsIgnoreCase(status)) {
+						logger.error(response);
+					} else if(DHIS2ResponseStatus.WARNING.name().equalsIgnoreCase(status)) {
+						logger.warn(response);
+					} else if(DHIS2ResponseStatus.SUCCESS.name().equalsIgnoreCase(status)) {
+						logger.info(response);
+					}
+					report.setStatus(status);
 					reportService.updateReport(report);
 					config.updateAppStateToken(DhisSchedulerConfig.dhis2_syncer_sync_report_by_date_updated,
 					    report.getServerVersion());
 				}
 				catch (JSONException e) {
-					logger.error("", e);
+					logger.error(e);
 				}
 				
 			}
