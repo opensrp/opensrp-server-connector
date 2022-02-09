@@ -3,6 +3,7 @@ package org.opensrp.connector.atomfeed;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.ektorp.ComplexKey;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.support.View;
@@ -92,7 +93,22 @@ public class AllFailedEventsCouchImpl implements AllFailedEvents {
 	public void insert(FailedEventRetryLog failedEventRetryLog) {
 		
 	}
-	
+
+	@Override
+	public List<FailedEvent> getFailedEvents(String s) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FailedEvent getByEventId(String s) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public List<FailedEventRetryLog> getFailedEventRetryLogs(String s) {
+		throw new NotImplementedException();
+	}
+
 	public class AllFailedEventInnerRepository extends BaseRepository<org.opensrp.connector.atomfeed.domain.FailedEvent> {
 		
 		AllFailedEventInnerRepository(CouchDbConnector db) {

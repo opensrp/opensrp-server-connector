@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.ict4h.atomfeed.client.domain.FailedEvent;
 import org.ict4h.atomfeed.client.domain.FailedEventRetryLog;
 import org.ict4h.atomfeed.client.repository.AllFailedEvents;
@@ -97,5 +98,20 @@ public class AllFailedEventsInMemoryImpl implements AllFailedEvents {
 	public void insert(FailedEventRetryLog failedEventRetryLog) {
 		
 	}
-	
+
+	@Override
+	public List<FailedEvent> getFailedEvents(String s) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public FailedEvent getByEventId(String s) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public List<FailedEventRetryLog> getFailedEventRetryLogs(String s) {
+		throw new NotImplementedException();
+	}
+
 }

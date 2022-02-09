@@ -17,7 +17,6 @@ import org.smartregister.domain.Event;
 import org.smartregister.domain.Obs;
 import org.opensrp.service.ClientService;
 import org.opensrp.service.EventService;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -9,7 +9,8 @@ import org.ict4h.atomfeed.client.domain.Event;
 import org.ict4h.atomfeed.client.repository.AllFailedEvents;
 import org.ict4h.atomfeed.client.repository.AllFeeds;
 import org.ict4h.atomfeed.client.repository.AllMarkers;
-import org.ict4h.atomfeed.client.repository.datasource.WebClient;
+import org.ict4h.atomfeed.client.repository.datasource.DefaultHttpClient;
+import org.ict4h.atomfeed.client.repository.datasource.HttpClient;
 import org.ict4h.atomfeed.client.service.AtomFeedClient;
 import org.ict4h.atomfeed.client.service.EventWorker;
 import org.ict4h.atomfeed.transaction.AFTransactionManager;
@@ -37,9 +38,7 @@ public class EncounterAtomfeed extends OpenmrsService implements EventWorker, At
 	private AtomFeedProperties atomFeedProperties;
 	
 	private AFTransactionManager transactionManager;
-	
-	private WebClient webClient;
-	
+
 	private AtomFeedClient client;
 	
 	private EncounterService encounterService;
@@ -62,7 +61,7 @@ public class EncounterAtomfeed extends OpenmrsService implements EventWorker, At
 				return action.execute();
 			}
 		};
-		this.webClient = new WebClient();
+		HttpClient webClient = new DefaultHttpClient();
 		
 		URI uri = new URI(OPENMRS_BASE_URL + OpenmrsConstants.ATOMFEED_URL + CATEGORY_URL);
 		this.client = new AtomFeedClient(new AllFeeds(webClient), allMarkers, allFailedEvents, atomFeedProperties,
