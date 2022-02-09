@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
@@ -98,5 +99,10 @@ public class AllMarkersCouchImplTest extends TestResourceLoader {
 		expectedSize = -2;
 		assertNotSame(expectedSize, marker.size());
 		allMarkersCouchImpl.removeAll();
+	}
+
+	@Test(expected = NotImplementedException.class)
+	public void testGetMarkerListShouldReturnNotImplementedException() {
+		allMarkersCouchImpl.getMarkerList();
 	}
 }

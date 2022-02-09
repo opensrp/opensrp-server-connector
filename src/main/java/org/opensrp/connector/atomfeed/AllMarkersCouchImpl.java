@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.support.GenerateView;
@@ -72,5 +73,10 @@ public class AllMarkersCouchImpl extends BaseRepository<Marker> implements AllMa
 			add(doc);
 		}
 	}
-	
+
+	@Override
+	public List<org.ict4h.atomfeed.client.domain.Marker> getMarkerList() {
+		throw new NotImplementedException();
+	}
+
 }

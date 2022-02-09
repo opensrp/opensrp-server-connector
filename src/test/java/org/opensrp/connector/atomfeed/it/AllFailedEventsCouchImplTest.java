@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
@@ -125,4 +126,20 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
 		assertEquals(expectedCount, actualCount);
 		allFailedEventsCouchImpl.remove(failedEvent);
 	}
+
+	@Test(expected = NotImplementedException.class)
+	public void testGetFailedEventsShouldReturnNotImplementedException() {
+		allFailedEventsCouchImpl.getFailedEvents("id");
+	}
+
+	@Test
+	public void testGetByEventIdShouldReturnNotImplementedException() {
+		allFailedEventsCouchImpl.getByEventId("id");
+	}
+
+	@Test
+	public void testGetFailedEventRetryLogsShouldReturnNotImplementedException() {
+		allFailedEventsCouchImpl.getFailedEventRetryLogs("id");
+	}
+
 }
