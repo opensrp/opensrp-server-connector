@@ -6,9 +6,9 @@ import org.json.JSONObject;
 import org.smartregister.domain.Client;
 
 public interface DHIS2Tracker {
-	
-	public JSONArray getTrackCaptureData(Client client) throws JSONException;
-	
-	public JSONObject sendTrackCaptureData(JSONArray attributes) throws JSONException;
-	
+
+    public JSONArray getTrackCaptureData(Client client) throws JSONException;
+
+    public JSONObject sendTrackCaptureData(JSONArray attributes) throws JSONException;
+
 }

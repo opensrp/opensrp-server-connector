@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.opensrp.connector.domain;
 
@@ -10,5 +10,5 @@ import org.ektorp.support.TypeDiscriminator;
  */
 @TypeDiscriminator("doc.type == 'Camp'")
 public class Camp extends org.opensrp.domain.Camp {
-	
+
 }

@@ -11,14 +11,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DHIS2LocationsImportSummary {
 
-	private Integer lastPageSynced;
+    private Integer lastPageSynced;
 
-	private Integer numberOfRowsProcessed;
+    private Integer numberOfRowsProcessed;
 
-	private Integer dhisPageCount;
+    private Integer dhisPageCount;
 
-	private Integer dhisLocationsCount;
+    private Integer dhisLocationsCount;
 
-	private DHISImportLocationsJobStatus dhisImportLocationsJobStatus;
+    private DHISImportLocationsJobStatus dhisImportLocationsJobStatus;
 
 }

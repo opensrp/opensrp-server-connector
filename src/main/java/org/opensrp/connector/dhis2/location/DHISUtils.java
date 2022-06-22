@@ -6,16 +6,15 @@ import java.util.Date;
 
 public class DHISUtils {
 
-	public static Date parseDhisDate(String date) throws ParseException {
+    public static Date parseDhisDate(String date) throws ParseException {
 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String updatedDate = date.replaceFirst("T", " ");
-		try{
-			return sdf.parse(updatedDate);
-		}
-		catch(ParseException e){
-			sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
-			return sdf.parse(date);
-		}
-	}
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String updatedDate = date.replaceFirst("T", " ");
+        try {
+            return sdf.parse(updatedDate);
+        } catch (ParseException e) {
+            sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
+            return sdf.parse(date);
+        }
+    }
 }
