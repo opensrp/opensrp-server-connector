@@ -32,7 +32,7 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
     String entryId = "entry";
     private AllFailedEventsCouchImpl allFailedEventsCouchImpl;
     private CouchDbInstance dbInstance;
-    private StdCouchDbConnector stdCouchDbConnector;
+
 
     public AllFailedEventsCouchImplTest() throws IOException {
         super();
@@ -41,11 +41,11 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
 
     @Before
     public void setup() {
+
         HttpClient httpClient = new StdHttpClient.Builder().host("localhost").port(5984).username(couchDBUserName)
                 .password(couchDBPassword).socketTimeout(1000).build();
         dbInstance = new StdCouchDbInstance(httpClient);
-
-        stdCouchDbConnector = new StdCouchDbConnector("atomfeed", dbInstance, new StdObjectMapperFactory());
+        StdCouchDbConnector stdCouchDbConnector = new StdCouchDbConnector("atomfeed", dbInstance, new StdObjectMapperFactory());
 
         stdCouchDbConnector.createDatabaseIfNotExists();
         allFailedEventsCouchImpl = new AllFailedEventsCouchImpl(1, stdCouchDbConnector);
@@ -58,12 +58,12 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
         Event event = new Event(entryId, "/apis/v2/some");
         String errorMessage = "error";
         int retries = 0;
-        org.ict4h.atomfeed.client.domain.FailedEvent expectedFailedEvent = new org.ict4h.atomfeed.client.domain.FailedEvent(
+        FailedEvent expectedFailedEvent = new FailedEvent(
                 feedUri, event, errorMessage, retries);
 
         allFailedEventsCouchImpl.addOrUpdate(expectedFailedEvent);
         allFailedEventsCouchImpl.addOrUpdate(expectedFailedEvent);
-        org.ict4h.atomfeed.client.domain.FailedEvent actualFailedEvent = allFailedEventsCouchImpl.get(feedUri,
+        FailedEvent actualFailedEvent = allFailedEventsCouchImpl.get(feedUri,
                 event.getId());
 
         allFailedEventsCouchImpl.remove(expectedFailedEvent);
@@ -73,7 +73,7 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
     @Test(expected = NullPointerException.class)
     public void testGetNullPointerException() {
 
-        org.ict4h.atomfeed.client.domain.FailedEvent actualFailedEvent = allFailedEventsCouchImpl.get(feedUri, feedUriId);
+      allFailedEventsCouchImpl.get(feedUri, feedUriId);
 
     }
 
@@ -90,7 +90,7 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
         Event event = new Event(entryId, "/apis/v2/somes");
         String errorMessage = "error";
         int retries = 0;
-        org.ict4h.atomfeed.client.domain.FailedEvent failedEvent = new org.ict4h.atomfeed.client.domain.FailedEvent(feedUri,
+        FailedEvent failedEvent = new FailedEvent(feedUri,
                 event, errorMessage, retries);
 
         allFailedEventsCouchImpl.addOrUpdate(failedEvent);
