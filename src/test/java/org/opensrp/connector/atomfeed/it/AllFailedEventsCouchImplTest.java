@@ -111,7 +111,7 @@ public class AllFailedEventsCouchImplTest extends TestResourceLoader {
         Event event = new Event(entryId, "/apis/v2/somes");
         String errorMessage = "error";
         int retries = 0;
-        org.ict4h.atomfeed.client.domain.FailedEvent failedEvent = new org.ict4h.atomfeed.client.domain.FailedEvent(feedUri,
+       FailedEvent failedEvent = new FailedEvent(feedUri,
                 event, errorMessage, retries);
 
         allFailedEventsCouchImpl.addOrUpdate(failedEvent);
