@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.opensrp.connector.domain;
 
@@ -10,6 +10,6 @@ import org.ektorp.support.TypeDiscriminator;
  */
 
 @TypeDiscriminator("doc.type == 'DHIS2Marker'")
-public class DHIS2Marker extends org.opensrp.domain.DHIS2Marker{
-	
+public class DHIS2Marker extends org.opensrp.domain.DHIS2Marker {
+
 }

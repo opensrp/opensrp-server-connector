@@ -6,15 +6,15 @@ import org.junit.Test;
 
 public class AllMarkersInMemoryImplTest {
 
-	private AllMarkersInMemoryImpl allMarkersInMemory;
+    private AllMarkersInMemoryImpl allMarkersInMemory;
 
-	@Before
-	public void setup(){
-		allMarkersInMemory = new AllMarkersInMemoryImpl();
-	}
+    @Before
+    public void setup() {
+        allMarkersInMemory = new AllMarkersInMemoryImpl();
+    }
 
-	@Test(expected = NotImplementedException.class)
-	public void testGetMarkerListShouldReturnNotImplementedException() {
-		allMarkersInMemory.getMarkerList();
-	}
+    @Test(expected = NotImplementedException.class)
+    public void testGetMarkerListShouldReturnNotImplementedException() {
+        allMarkersInMemory.getMarkerList();
+    }
 }

@@ -4,10 +4,10 @@
     "default_bind_path": "/model/instance/PregnancySurveillanceAndRegistrationForm",
     "bind_type": "elco",
     "fields": [
-	  {
+      {
         "name": "id",
         "shouldLoadValue": true
-	  },
+      },
       {
         "name": "FWWOMMAUZA_PARA",
         "bind": "/model/instance/PregnancySurveillanceAndRegistrationForm/existing_mauzapara",
@@ -28,7 +28,7 @@
         "bind": "/model/instance/PregnancySurveillanceAndRegistrationForm/existing_first_name",
         "shouldLoadValue": true
       },
-       {
+      {
         "name": "FWHUSNAME",
         "bind": "/model/instance/PregnancySurveillanceAndRegistrationForm/existing_husname",
         "shouldLoadValue": true
